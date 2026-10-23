@@ -1,0 +1,39 @@
+name: TV scale check
+
+# Renders a few screens on a TV that reports a small dp screen (640x360 dp) and
+# uploads them as a workflow artifact, to check menus fit without being cut off.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Render
+        shell: bash
+        run: |
+          chmod +x gradlew
+          set -o pipefail
+          ./gradlew :app:recordRoborazziDebug --tests 'app.parabol.ReadmeScreenshots.tvSmall*' --no-daemon 2>&1 | tee build.log
+      - name: Report errors
+        if: failure()
+        shell: bash
+        run: |
+          errors=$(grep -E '^e: |What went wrong|FAILED|Exception|Caused by' build.log | head -50 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Errors::${errors}"
+      - name: Push renders to a check branch
+        shell: bash
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout -b "tvscale-${GITHUB_RUN_ID}"
+          mkdir -p tvscale && cp app/build/tvscale/*.png tvscale/
+          git add tvscale && git commit -m "TV scale renders" && git push origin "tvscale-${GITHUB_RUN_ID}"

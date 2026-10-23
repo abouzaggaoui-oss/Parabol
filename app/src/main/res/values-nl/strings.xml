@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Parabol</string>
+
+    <!-- Login -->
+    <string name="login_title">Verbind met je provider</string>
+    <string name="login_server">Server-URL (bijv. http://server.com:8080)</string>
+    <string name="login_username">Gebruikersnaam</string>
+    <string name="login_password">Wachtwoord</string>
+    <string name="login_button">Verbinden</string>
+    <string name="login_error">Verbinden mislukt. Controleer de server-URL en je inloggegevens.</string>
+    <string name="login_fill_all">Vul alle velden in.</string>
+
+    <!-- Tabs -->
+    <string name="tab_live">Live tv</string>
+    <string name="tab_movies">Films</string>
+    <string name="tab_series">Series</string>
+    <string name="tab_favorites">Favorieten</string>
+    <string name="tab_settings">Instellingen</string>
+
+    <!-- General -->
+    <string name="loading">Laden…</string>
+    <string name="search">Zoeken</string>
+    <string name="back">Terug</string>
+    <string name="play">Afspelen</string>
+    <string name="no_results">Niets gevonden.</string>
+    <string name="favorite_add">Toevoegen aan favorieten</string>
+    <string name="favorite_remove">Verwijderen uit favorieten</string>
+    <string name="no_favorites">Nog geen favorieten. Houd een kanaal, film of serie lang ingedrukt — of gebruik het hartje — om er een toe te voegen.</string>
+
+    <!-- EPG -->
+    <string name="epg_title">Tv-gids</string>
+    <string name="epg_now">Nu</string>
+    <string name="epg_next">Straks</string>
+    <string name="epg_empty">Geen gidsgegevens beschikbaar voor dit kanaal.</string>
+    <string name="epg_open">Tv-gids openen</string>
+
+    <!-- Series -->
+    <string name="season">Seizoen %1$s</string>
+    <string name="episodes">afleveringen</string>
+
+    <!-- Settings -->
+    <string name="settings_account">Account</string>
+    <string name="settings_logged_in_as">Verbonden als %1$s</string>
+    <string name="settings_expires">Abonnement verloopt: %1$s</string>
+    <string name="settings_logout">Uitloggen</string>
+    <string name="settings_stream_format">Live-streamformaat</string>
+    <string name="settings_stream_format_hint">Wissel als live kanalen niet afspelen.</string>
+    <string name="settings_refresh">Inhoud vernieuwen</string>
+
+    <!-- Player -->
+    <string name="player_error">Afspeelfout. Probeer het andere streamformaat in Instellingen.</string>
+
+    <!-- Filters -->
+    <string name="search_global">Zoek in alle groepen</string>
+    <string name="search_groups">Zoek groepen…</string>
+    <string name="show_all">Alles tonen</string>
+    <string name="hide_all">Alles verbergen</string>
+
+    <!-- Player extras -->
+    <string name="live_badge">LIVE</string>
+    <string name="load_subtitles">Ondertiteling (SRT/VTT)</string>
+    <string name="subtitles_loaded">Ondertiteling geladen</string>
+
+    <!-- Recording & catch-up -->
+    <string name="recording_schedule">Opnemen</string>
+    <string name="recording_scheduled_cancel">Ingepland — annuleren</string>
+    <string name="catchup_watch">Terugkijken</string>
+    <string name="tab_recordings">Opnames</string>
+    <string name="recordings_scheduled">Gepland</string>
+    <string name="recordings_completed">Opgenomen</string>
+    <string name="recordings_none_scheduled">Nog geen opnames ingepland. Open de tv-gids van een kanaal en tik op \"Opnemen\" bij een aankomend programma.</string>
+    <string name="recordings_none_completed">Nog geen opnames.</string>
+    <string name="recording_cancel_confirm">Annuleren</string>
+    <string name="recording_delete">Verwijderen</string>
+
+    <!-- Accounts -->
+    <string name="settings_accounts">Accounts</string>
+    <string name="account_add">Account toevoegen</string>
+    <string name="account_switch">Wissel naar dit account</string>
+    <string name="account_remove">Verwijderen</string>
+    <string name="account_active">Actief</string>
+    <string name="account_name_hint">Naam voor dit account (bijv. \"Thuis\")</string>
+    <string name="load_failed">Je provider is niet bereikbaar. Controleer je internetverbinding.</string>
+    <string name="retry">Opnieuw proberen</string>
+    <string name="recording_now">Nu opnemen</string>
+    <string name="account_remove_title">%1$s verwijderen?</string>
+    <string name="account_remove_message">Hiermee verwijder je ook de favorieten, verborgen groepen en geplande opnames van dit account. Voltooide opnames blijven op je toestel staan.</string>
+    <!-- Redesign v2 -->
+    <string name="home_live_subtitle">%1$d zenders</string>
+    <string name="home_movies_subtitle">%1$d films</string>
+    <string name="home_series_subtitle">%1$d series</string>
+    <string name="home_loading">Content laden…</string>
+    <string name="home_subscription_until">Abonnement geldig tot %1$s</string>
+    <string name="groups_title">Groepen</string>
+    <string name="search_channels">Zoek zenders</string>
+    <string name="search_titles">Zoek titels</string>
+    <string name="count_channels">%1$d zenders</string>
+    <string name="count_titles">%1$d titels</string>
+    <string name="up_next">Hierna</string>
+    <string name="no_epg">Geen programma-informatie</string>
+    <string name="choose_group">Kies een groep</string>
+    <string name="favorites_empty">Nog geen favorieten. Houd een zender of titel ingedrukt, of gebruik de knop Favoriet tijdens het kijken.</string>
+    <string name="action_fullscreen">Volledig scherm</string>
+    <string name="manage_groups">Groepen beheren</string>
+    <string name="manage_groups_hint">Kies welke landen en groepen je ziet bij Live tv, Films en Series.</string>
+    <string name="groups_visible_summary">%1$d van %2$d groepen zichtbaar</string>
+    <string name="countries_title">Welke landen wil je zien?</string>
+    <string name="countries_hint">Eén klik zet alle groepen van een land aan of uit.</string>
+    <string name="country_other">Overig (geen land)</string>
+    <string name="country_all_visible">%1$d groepen · alles zichtbaar</string>
+    <string name="country_none_visible">%1$d groepen · verborgen</string>
+    <string name="country_partly">%1$d van %2$d zichtbaar · deels</string>
+    <string name="single_groups_title">Losse groepen</string>
+    <string name="single_groups_hint">Alles tonen en Alles verbergen werken op de groepen die je ziet, dus ook op een zoekresultaat.</string>
+    <string name="no_groups">Nog geen groepen geladen.</string>
+    <string name="player_error_vod">Deze video kan niet worden afgespeeld.</string>
+    <string name="player_error_codec">Deze video gebruikt een formaat dat je toestel niet kan afspelen.</string>
+    <string name="player_error_container">Het bestandsformaat van deze video wordt niet ondersteund of het bestand is beschadigd.</string>
+    <string name="player_error_network">Geen verbinding met de server.</string>
+    <string name="player_error_http">De server weigert de video (HTTP %1$d).</string>
+    <string name="accounts_title">Wie kijkt er?</string>
+    <string name="accounts_subtitle">Kies een account</string>
+    <string name="accounts_switch">Account wisselen</string>
+    <string name="account_name_label">Naam voor dit account</string>
+    <string name="account_name_placeholder">Bijv. Thuis, Vakantiehuis</string>
+    <string name="account_add_tile">Account toevoegen</string>
+    <string name="screen_info">Scherm: %1$d×%2$d px · toestel meldt %3$d×%4$d dp (dichtheid %5$.2f, tekst %6$.2f) · Parabol gebruikt dichtheid %7$.2f</string>
+    <string name="settings_tv_size">Menugrootte</string>
+    <string name="settings_tv_size_hint">Hoe groot menu\'s en tekst op deze tv worden getoond.</string>
+    <string name="tv_size_small">Klein</string>
+    <string name="tv_size_normal">Normaal</string>
+    <string name="tv_size_large">Groot</string>
+    <string name="settings_about">Over Parabol</string>
+    <string name="settings_version">Versie %1$s</string>
+</resources>

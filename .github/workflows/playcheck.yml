@@ -1,0 +1,84 @@
+name: Play check
+
+# Builds the signed APK + App Bundle, checks the Play Store requirements that
+# can be checked automatically (16 KB page size, target SDK) and renders a few
+# TV screens. Results are pushed to a branch play-check-<run id>.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build signed APK and bundle
+        shell: bash
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/k.jks"
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/k.jks"
+          chmod +x gradlew
+          set -o pipefail
+          ./gradlew assembleRelease bundleRelease --no-daemon 2>&1 | tee build.log
+      - name: Render TV screens
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :app:recordRoborazziDebug --tests 'app.parabol.ReadmeScreenshots.tvSmall*' --no-daemon 2>&1 | tee -a build.log
+      - name: Report build errors
+        if: failure()
+        shell: bash
+        run: |
+          errors=$(grep -E '^e: |What went wrong|FAILED|Exception|Caused by|error:' build.log | head -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Errors::${errors}"
+      - name: Check Play requirements
+        shell: bash
+        run: |
+          mkdir -p report
+          APK=app/build/outputs/apk/release/app-release.apk
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          {
+            echo "== zipalign 16 KB"
+            $BT/zipalign -c -P 16 -v 4 "$APK" | grep -E "lib/|Verification" || true
+            echo "== ELF LOAD alignment"
+            rm -rf x && mkdir x && unzip -q "$APK" 'lib/*' -d x
+            python3 - <<'PY'
+          import glob, struct
+          for so in sorted(glob.glob('x/lib/*/*.so')):
+              d = open(so, 'rb').read()
+              is64 = d[4] == 2
+              if is64:
+                  phoff = struct.unpack_from('<Q', d, 0x20)[0]; phentsize, phnum = struct.unpack_from('<HH', d, 0x36)
+              else:
+                  phoff = struct.unpack_from('<I', d, 0x1C)[0]; phentsize, phnum = struct.unpack_from('<HH', d, 0x2A)
+              aligns = set()
+              for i in range(phnum):
+                  o = phoff + i * phentsize
+                  if struct.unpack_from('<I', d, o)[0] == 1:
+                      aligns.add(struct.unpack_from('<Q', d, o + 48)[0] if is64 else struct.unpack_from('<I', d, o + 28)[0])
+              print(so[2:], sorted(aligns), 'OK' if min(aligns) >= 16384 else 'TOO SMALL')
+          PY
+            echo "== badging"
+            $BT/aapt2 dump badging "$APK" | grep -E "^package|targetSdk|sdkVersion|leanback|uses-feature" || true
+            echo "== signature"
+            keytool -printcert -jarfile "$APK" | grep SHA256
+            ls -la app/build/outputs/bundle/release/
+          } > report/report.txt 2>&1
+          cat report/report.txt
+      - name: Push results
+        shell: bash
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout -b "play-check-${GITHUB_RUN_ID}"
+          mkdir -p check && cp report/report.txt check/ && cp app/build/tvscale/*.png check/ || true
+          git add check && git commit -m "Play check results" && git push origin "play-check-${GITHUB_RUN_ID}"

@@ -1,0 +1,85 @@
+name: Release APK
+
+# A release is created automatically whenever the app's versionName changes on main
+# (e.g. 1.5.0 -> 1.6.0), or when a v* tag is pushed. Existing releases are never
+# overwritten: if the version already has a release, the job just skips.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/build.gradle.kts'
+      - '.github/workflows/release.yml'
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine version tag
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            TAG="v$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_REF_TYPE}" != "tag" ] && gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "Release $TAG already exists, skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK 17
+        if: steps.version.outputs.skip != 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build signed release APK
+        if: steps.version.outputs.skip != 'true'
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ] || [ -z "$ANDROID_KEYSTORE_PASSWORD" ]; then
+            echo "::error title=Signing key missing::Add the secrets ANDROID_KEYSTORE_B64 and ANDROID_KEYSTORE_PASSWORD (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/parabol-release.jks"
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/parabol-release.jks"
+          chmod +x gradlew
+          ./gradlew assembleRelease bundleRelease --no-daemon
+          # Fail if the APK isn't signed with the registered Parabol key.
+          EXPECTED="D6:4B:18:1B:3E:6C:74:15:E4:DF:E3:A5:C8:19:41:47:33:7E:9F:A5:21:67:F8:B7:65:E9:44:AD:5C:BE:F9:9D"
+          keytool -printcert -jarfile app/build/outputs/apk/release/app-release.apk | grep -q "SHA256: $EXPECTED" \
+            || { echo "::error title=Wrong signing key::APK fingerprint does not match the registered key"; exit 1; }
+
+      - name: Rename APK to include version
+        if: steps.version.outputs.skip != 'true'
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk "Parabol-${{ steps.version.outputs.tag }}.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "Parabol-${{ steps.version.outputs.tag }}.aab"
+
+      - name: Create GitHub Release with APK attached
+        if: steps.version.outputs.skip != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Parabol ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          files: |
+            Parabol-${{ steps.version.outputs.tag }}.apk
+            Parabol-${{ steps.version.outputs.tag }}.aab
+          generate_release_notes: true

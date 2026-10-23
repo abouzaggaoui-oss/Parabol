@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data: blob:; img-src * data: blob:; media-src * blob: data: file: parabol-rec:; connect-src * parabol-rec:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <title>Parabol</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- Screens (login, home, live, …) are rendered into #root by app.js. -->
+  <div id="root"></div>
+
+  <!-- Live TV video: one element that sits over the preview slot (split view)
+       or covers the whole window (full screen), so the stream never restarts. -->
+  <div id="liveLayer" class="hidden">
+    <video id="liveVideo" autoplay></video>
+    <div id="liveTop" class="live-top">
+      <button class="icon-btn" id="liveBackBtn" aria-label="Terug"></button>
+      <div class="live-top-hint">Esc = terug &nbsp;·&nbsp; ↑ ↓ = zappen &nbsp;·&nbsp; Enter = info</div>
+    </div>
+    <div id="liveBanner" class="live-banner"></div>
+  </div>
+
+  <!-- Player for movies, episodes, catch-up and recordings (see vod.js). -->
+  <div id="vodPlayer" class="hidden">
+    <video id="vodVideo" autoplay controls></video>
+    <div id="vodLoading" class="vod-loading hidden"><div class="spinner big"></div></div>
+    <div id="vodTop" class="vod-top">
+      <button class="icon-btn" id="vodBackBtn" aria-label="Terug" title="Terug (Esc)"></button>
+      <div class="vod-title-wrap">
+        <div class="vod-title" id="vodTitle"></div>
+        <div class="vod-info" id="vodInfo"></div>
+      </div>
+      <button class="icon-btn hidden" id="vodPrevBtn" aria-label="Vorige aflevering" title="Vorige aflevering (P)"></button>
+      <button class="icon-btn hidden" id="vodNextBtn" aria-label="Volgende aflevering" title="Volgende aflevering (N)"></button>
+      <select id="audioTrackSelect" class="select hidden" aria-label="Audiospoor" title="Audiospoor"></select>
+      <select id="subtitleSelect" class="select hidden" aria-label="Ondertiteling" title="Ondertiteling"></select>
+      <input type="file" id="subtitleFileInput" accept=".srt,.vtt" hidden />
+      <button class="btn btn-outline" id="subtitleUploadBtn">Ondertiteling laden</button>
+      <button class="btn btn-outline" id="subtitleSearchBtn">Zoeken (OpenSubtitles)</button>
+    </div>
+    <!-- Own controls for converted videos (the browser can't seek in those). -->
+    <div id="vodBar" class="vod-bar">
+      <input type="range" id="vodSeek" min="0" max="1" step="1" value="0" aria-label="Positie" />
+      <div class="vod-bar-row">
+        <button class="icon-btn" id="vodPlayBtn" aria-label="Pauzeren"></button>
+        <button class="icon-btn" id="vodBackSkip" aria-label="10 seconden terug" title="10 s terug (←)"></button>
+        <button class="icon-btn" id="vodFwdSkip" aria-label="30 seconden vooruit" title="30 s vooruit (→)"></button>
+        <div class="vod-time" id="vodTime">0:00</div>
+        <div class="grow"></div>
+        <button class="icon-btn" id="vodFullBtn" aria-label="Volledig scherm" title="Volledig scherm (F)"></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="dialogHost"></div>
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="js/hls.min.js"></script>
+  <script src="js/mpegts.min.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/xtream.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/vod.js"></script>
+  <script src="js/screens-home.js"></script>
+  <script src="js/screens-live.js"></script>
+  <script src="js/screens-browse.js"></script>
+  <script src="js/screens-guide.js"></script>
+  <script src="js/screens-settings.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

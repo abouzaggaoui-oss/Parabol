@@ -1,0 +1,50 @@
+name: README screenshots
+
+# Renders the phone and TV screenshots in docs/screenshots with fictional demo content
+# (Robolectric + Roborazzi, no emulator needed) and commits them when they changed.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Render screenshots
+        shell: bash
+        run: |
+          chmod +x gradlew
+          set -o pipefail
+          ./gradlew :app:recordRoborazziDebug --no-daemon 2>&1 | tee build.log
+
+      - name: Report errors
+        if: failure()
+        shell: bash
+        run: |
+          errors=$(grep -E '^e: |What went wrong|^> [^T]|FAILED|Exception|Error:|Caused by|^\s+at app\.parabol' build.log | head -70 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Screenshot errors::${errors}"
+
+      - name: Commit screenshots
+        shell: bash
+        run: |
+          ls -la docs/screenshots
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged"
+          else
+            git commit -m "Update README screenshots"
+            git push
+          fi
