@@ -4,7 +4,7 @@
 
 <h1 align="center">Parabol</h1>
 
-<p align="center">Mediaspeler voor Android, Google TV, Windows en macOS. Speelt live tv, films en series af van je eigen aanbieder (Xtream Codes API).</p>
+<p align="center">Mediaspeler voor Android, Google TV, Windows en macOS. Speelt live tv, films en series af van je eigen aanbieder.</p>
 
 > Parabol bevat geen zenders, films, series of afspeellijsten en is niet verbonden aan een aanbieder of omroep. Je hebt een eigen, geldig abonnement nodig.
 
