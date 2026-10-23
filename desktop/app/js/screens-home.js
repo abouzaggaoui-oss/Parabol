@@ -90,6 +90,8 @@ SCREENS.home = () => {
         h('button.btn.btn-text', { onclick: () => loadAll() }, 'Opnieuw proberen')));
     } else if (M.loading) {
       status.appendChild(h('div.row.gap-12', null, h('div.spinner'), h('span', { text: 'Zenders, films en series laden…' })));
+    } else if (Xtream.isDemo) {
+      status.textContent = "Demo-account: verzonnen zenders en tv-gids. Video's: open films van de Blender Foundation (CC BY 3.0), www.blender.org.";
     } else if (M.userInfo && parseInt(M.userInfo.exp_date, 10) > 0) {
       status.textContent = 'Abonnement geldig tot ' + formatDate(parseInt(M.userInfo.exp_date, 10));
     }

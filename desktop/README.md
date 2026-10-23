@@ -2,6 +2,10 @@
 
 De desktopversie van Parabol, gebouwd met Electron. Parabol bevat geen content: je speelt af van je eigen aanbieder (Xtream Codes API). Vanaf **v2.2.0** heeft hij dezelfde opzet en functies als de Android-app v2.2.0.
 
+## Nieuw in v2.5.2
+
+Ingebouwd demo-account: log in met server-URL `demo`, gebruikersnaam `demo` en wachtwoord `demo` om Parabol te proberen zonder abonnement. Verzonnen zenders en tv-gids; de video's zijn de open films van de [Blender Foundation](https://www.blender.org) (CC BY 3.0). Desktop en Android hebben nu hetzelfde versienummer.
+
 ## Nieuw in v2.4.1
 
 Accountkeuze toont alleen de accountnaam; de naam is verplicht. Ondertiteling die in de film zelf zit (tekst-ondertitels zoals SRT/ASS in .mkv) kies je in de speler bovenin; ondertitels als beeld (PGS/DVD) worden getoond maar zijn niet te gebruiken.

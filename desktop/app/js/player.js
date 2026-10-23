@@ -7,7 +7,7 @@
 /** Attaches a URL to a <video>: HLS via hls.js, MPEG-TS via mpegts.js, anything else natively. */
 function createEngine(video, url, { live, onFatal }) {
   const isHls = /\.m3u8(\?|$)/i.test(url);
-  const isTs = /\.ts(\?|$)/i.test(url) || url.startsWith('parabol-rec:');
+  const isTs = /\.ts(\?|$)/i.test(url);
   if (isHls && window.Hls && Hls.isSupported()) {
     const hls = new Hls({ enableWorker: true, lowLatencyMode: false, backBufferLength: 30 });
     let recovered = false;

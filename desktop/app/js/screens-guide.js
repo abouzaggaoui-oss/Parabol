@@ -115,7 +115,7 @@ SCREENS.recordings = () => {
         h('div.grow', null,
           h('div', { style: { fontWeight: 600 }, text: r.programTitle }),
           h('div.hint', { text: `${r.channelName} · ${formatDateTime(r.recordedAtEpochSeconds)}` })),
-        h('button.btn', { onclick: () => VodPlayer.play([{ url: 'parabol-rec://rec/' + encodeURIComponent(r.id) + '.ts', src: 'rec:' + r.id, title: r.programTitle }], 0) }, 'Afspelen'),
+        h('button.btn', { onclick: () => VodPlayer.play([{ url: 'parabol-rec://rec/' + encodeURIComponent(r.id) + '.' + (r.ext || 'ts'), src: 'rec:' + r.id, title: r.programTitle }], 0) }, 'Afspelen'),
         h('button.btn.btn-text', {
           onclick: () => confirmDialog('Opname verwijderen?', `"${r.programTitle}" wordt van je computer verwijderd.`, 'Verwijderen', () => deleteCompletedRecording(r.id)),
         }, 'Verwijderen'))));

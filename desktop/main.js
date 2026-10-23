@@ -86,6 +86,7 @@ function publicRecordings() {
     completed: data.completed.map((r) => ({
       ...r,
       fileUrl: pathToFileURL(r.filePath).href,
+      ext: path.extname(r.filePath).slice(1) || 'ts',
     })),
   };
 }
@@ -103,7 +104,9 @@ function startRecording(rec) {
 
   fs.mkdirSync(recordingsDir(), { recursive: true });
   const safeTitle = (rec.programTitle || 'Opname').replace(/[^A-Za-z0-9 _-]/g, '').trim() || 'Opname';
-  const fileName = `Parabol - ${safeTitle} - ${Date.now()}.ts`;
+  // A plain video file (the demo account's sample videos) is downloaded whole, so it stays playable.
+  const isFile = /\.mp4(\?|$)/i.test(rec.url || '');
+  const fileName = `Parabol - ${safeTitle} - ${Date.now()}.${isFile ? 'mp4' : 'ts'}`;
   const filePath = path.join(recordingsDir(), fileName);
   const fileStream = fs.createWriteStream(filePath);
 
@@ -147,7 +150,7 @@ function startRecording(rec) {
 
       const endTimeMs = rec.endEpochSeconds * 1000;
       checkInterval = setInterval(() => {
-        if (Date.now() >= endTimeMs) {
+        if (!isFile && Date.now() >= endTimeMs) {
           clearInterval(checkInterval);
           req.destroy();
         }
@@ -260,7 +263,7 @@ ipcMain.handle('media:available', () => mediaService().available);
 
 function registerRecordingProtocol() {
   protocol.handle('parabol-rec', (request) => {
-    const id = decodeURIComponent(new URL(request.url).pathname.replace(/^\//, '').replace(/\.ts$/, ''));
+    const id = decodeURIComponent(new URL(request.url).pathname.replace(/^\//, '').replace(/\.(ts|mp4)$/, ''));
     const rec = loadRecordings().completed.find((r) => r.id === id);
     if (!rec || !fs.existsSync(rec.filePath)) return new Response('Not found', { status: 404 });
     return net.fetch(pathToFileURL(rec.filePath).toString());

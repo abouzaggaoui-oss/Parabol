@@ -11,7 +11,12 @@ const Xtream = {
     this.password = password;
   },
 
+  get isDemo() {
+    return DemoServer.isDemo(this.base);
+  },
+
   async call(action, params = {}) {
+    if (this.isDemo) return DemoServer.respond(action || '', params, this.username, this.password);
     const url = new URL(this.base + '/player_api.php');
     url.searchParams.set('username', this.username);
     url.searchParams.set('password', this.password);
@@ -55,16 +60,20 @@ const Xtream = {
   },
 
   liveUrl(streamId, ext = 'm3u8') {
+    if (this.isDemo) return DemoServer.liveUrl(streamId);
     return `${this.base}/live/${this.username}/${this.password}/${streamId}.${ext}`;
   },
   /** Raw MPEG-TS URL, used specifically for recording (simple byte-copy download). */
   rawTsUrl(streamId) {
+    if (this.isDemo) return DemoServer.liveUrl(streamId); // an mp4 file: recorded whole
     return `${this.base}/live/${this.username}/${this.password}/${streamId}.ts`;
   },
   movieUrl(streamId, ext) {
+    if (this.isDemo) return DemoServer.movieUrl(streamId);
     return `${this.base}/movie/${this.username}/${this.password}/${streamId}.${ext || 'mp4'}`;
   },
   episodeUrl(episodeId, ext) {
+    if (this.isDemo) return DemoServer.episodeUrl(episodeId);
     return `${this.base}/series/${this.username}/${this.password}/${episodeId}.${ext || 'mp4'}`;
   },
   /**
@@ -73,6 +82,7 @@ const Xtream = {
    * (server-local) is used when present, shifted by the user's guide correction.
    */
   catchupUrl(streamId, serverStart, startEpochSeconds, durationMinutes, offsetHours = 0) {
+    if (this.isDemo) return DemoServer.liveUrl(streamId);
     const pad = (n) => String(n).padStart(2, '0');
     const fmt = (d) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}:${pad(d.getUTCHours())}-${pad(d.getUTCMinutes())}`;
     let startStr;
