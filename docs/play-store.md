@@ -68,7 +68,9 @@ Beantwoord de vragenlijst voor een app die zelf geen content levert (de gebruike
 Nee.
 
 ## Toegang voor de beoordelaar (App access)
-Google vraagt hoe ze de app kunnen testen. Geef inloggegevens van een testaccount bij je eigen aanbieder op (alleen in Play Console, nooit in deze repository).
+Gebruik het ingebouwde demo-account; daarvoor is geen abonnement nodig.
+- Gebruikersnaam: `demo` · Wachtwoord: `demo`
+- Andere informatie: "Open Parabol, kies Account toevoegen, vul als naam Demo in, als server-URL demo, als gebruikersnaam demo en als wachtwoord demo, en kies Verbinden. Het demo-account toont verzonnen zenders en een tv-gids; de video's zijn de open films van de Blender Foundation (CC BY 3.0). Alle functies (live tv, tv-gids, films, series, opnemen, favorieten) zijn ermee te testen."
 
 ## Afbeeldingen (map `docs/play-store/`)
 

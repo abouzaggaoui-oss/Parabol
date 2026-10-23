@@ -102,16 +102,19 @@ class RecordingWorker(
         val endEpochSeconds = inputData.getLong("endEpochSeconds", 0L) + END_PADDING_SECONDS
 
         val store = Store(applicationContext)
-        val url = "${baseUrl.trimEnd('/')}/live/$username/$password/$streamId.ts"
+        // Demo account: record its sample video once (an mp4 file, not an endless stream).
+        val demo = app.parabol.data.DemoServer.isDemo(baseUrl)
+        val url = if (demo) app.parabol.data.DemoServer.liveUrl(streamId)
+            else "${baseUrl.trimEnd('/')}/live/$username/$password/$streamId.ts"
 
         val safeTitle = programTitle.replace(Regex("[^A-Za-z0-9 _\\-]"), "").ifBlank { "Opname" }
-        val fileName = "Parabol - $safeTitle - ${System.currentTimeMillis()}.ts"
+        val fileName = "Parabol - $safeTitle - ${System.currentTimeMillis()}." + (if (demo) "mp4" else "ts")
 
         var contentUri: Uri? = null
         var bytesWritten = 0L
 
         try {
-            contentUri = createOutputUri(fileName) ?: return@withContext Result.failure()
+            contentUri = createOutputUri(fileName, if (demo) "video/mp4" else "video/mp2t") ?: return@withContext Result.failure()
 
             val client = OkHttpClient.Builder()
                 .connectTimeout(15, TimeUnit.SECONDS)
@@ -130,7 +133,8 @@ class RecordingWorker(
                             if (!response.isSuccessful) throw IOException("HTTP ${response.code}")
                             val body = response.body ?: throw IOException("Lege respons")
                             body.byteStream().use { input ->
-                                bytesWritten += copyUntil(input, output, endEpochSeconds)
+                                // The demo video is copied whole, so the file stays playable.
+                                bytesWritten += copyUntil(input, output, if (demo) Long.MAX_VALUE else endEpochSeconds)
                             }
                         }
                     } catch (e: CancellationException) {
@@ -138,6 +142,7 @@ class RecordingWorker(
                     } catch (e: IOException) {
                         setForeground(createForegroundInfo("Verbinding weggevallen, opnieuw verbinden..."))
                     }
+                    if (demo && bytesWritten > 0) break // the demo video is a file: one copy is enough
                     if (System.currentTimeMillis() / 1000 < endEpochSeconds) delay(RECONNECT_DELAY_MS)
                 }
             }
@@ -191,12 +196,12 @@ class RecordingWorker(
         return copied
     }
 
-    private fun createOutputUri(fileName: String): Uri? {
+    private fun createOutputUri(fileName: String, mime: String): Uri? {
         val resolver = applicationContext.contentResolver
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val values = ContentValues().apply {
                 put(MediaStore.Video.Media.DISPLAY_NAME, fileName)
-                put(MediaStore.Video.Media.MIME_TYPE, "video/mp2t")
+                put(MediaStore.Video.Media.MIME_TYPE, mime)
                 put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/Parabol")
                 put(MediaStore.Video.Media.IS_PENDING, 1)
             }

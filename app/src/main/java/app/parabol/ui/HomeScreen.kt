@@ -312,6 +312,13 @@ private fun HomeStatus(vm: MainViewModel) {
                 )
             }
         }
+        app.parabol.data.DemoServer.isDemo(vm.activeProfile?.baseUrl) -> {
+            Text(
+                stringResource(R.string.home_demo_notice),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         else -> {
             val exp = vm.userInfo?.expDate?.toLongOrNull()
             if (exp != null && exp > 0) {

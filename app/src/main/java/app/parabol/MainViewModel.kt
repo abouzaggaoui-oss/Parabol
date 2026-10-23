@@ -482,17 +482,22 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val profileUsername get() = store.activeProfile()?.username ?: ""
     private val profilePassword get() = store.activeProfile()?.password ?: ""
 
+    private val isDemo get() = app.parabol.data.DemoServer.isDemo(base)
+
     fun liveUrl(streamId: Int): String {
+        if (isDemo) return app.parabol.data.DemoServer.liveUrl(streamId)
         val ext = if (store.useHls) "m3u8" else "ts"
         return "$base/live/$profileUsername/$profilePassword/$streamId.$ext"
     }
 
     fun movieUrl(streamId: Int, containerExtension: String?): String {
+        if (isDemo) return app.parabol.data.DemoServer.movieUrl(streamId)
         val ext = containerExtension?.takeIf { it.isNotBlank() } ?: "mp4"
         return "$base/movie/$profileUsername/$profilePassword/$streamId.$ext"
     }
 
     fun episodeUrl(episodeId: String, containerExtension: String?): String {
+        if (isDemo) return app.parabol.data.DemoServer.episodeUrl(episodeId)
         val ext = containerExtension?.takeIf { it.isNotBlank() } ?: "mp4"
         return "$base/series/$profileUsername/$profilePassword/$episodeId.$ext"
     }
@@ -507,6 +512,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      * Timeshift is requested as .ts: many panels don't serve timeshift over HLS.
      */
     fun catchupUrl(streamId: Int, serverStart: String?, startEpochSeconds: Long, durationMinutes: Int): String {
+        if (isDemo) return app.parabol.data.DemoServer.liveUrl(streamId)
         val match = serverStart?.let {
             Regex("(\\d{4}-\\d{2}-\\d{2})[ T](\\d{2}):(\\d{2})").find(it)
         }

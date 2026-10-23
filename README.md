@@ -85,7 +85,8 @@ Parabol verschijnt daarna gewoon in het app-overzicht van Google TV (leanback la
 2. **Live tv**: tik op een groep → tik op een kanaal om af te spelen. Info-knop = tv-gids, hartje of lang indrukken = favoriet.
 3. **Films/Series**: posterweergave per groep. Bij series kies je seizoen en aflevering.
 4. **Groepen kiezen**: Instellingen → Groepen beheren.
-5. **Speelt live tv niet af?** Wissel in Instellingen het streamformaat van HLS naar MPEG-TS (of andersom).
+5. **Eerst proberen zonder abonnement?** Log in met server-URL `demo`, gebruikersnaam `demo` en wachtwoord `demo`. Je ziet dan verzonnen zenders en een tv-gids; de video's zijn de open films van de [Blender Foundation](https://www.blender.org) (CC BY 3.0).
+6. **Speelt live tv niet af?** Wissel in Instellingen het streamformaat van HLS naar MPEG-TS (of andersom).
 
 ## Technisch
 

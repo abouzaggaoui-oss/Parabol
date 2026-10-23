@@ -133,4 +133,5 @@
     <string name="tv_size_large">Large</string>
     <string name="settings_about">About Parabol</string>
     <string name="settings_version">Version %1$s</string>
+    <string name="home_demo_notice">Demo account: fictional channels and guide. Videos: open movies by the Blender Foundation (CC BY 3.0), www.blender.org.</string>
 </resources>

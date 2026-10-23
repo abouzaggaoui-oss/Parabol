@@ -1,5 +1,9 @@
 # Wijzigingen (Android)
 
+## Nieuw in v2.5.2
+
+- **Demo-account**: log in met server `demo`, gebruikersnaam `demo` en wachtwoord `demo` om Parabol te proberen zonder abonnement. Verzonnen zenders en tv-gids; de video's zijn de open films van de Blender Foundation (CC BY 3.0).
+
 ## Nieuw in v2.5.1
 
 - Ondertekend met een nieuwe vaste sleutel. Eenmalig: verwijder de oude Parabol en installeer deze versie.

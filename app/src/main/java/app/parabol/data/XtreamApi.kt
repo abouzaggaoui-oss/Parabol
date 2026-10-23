@@ -84,6 +84,7 @@ interface XtreamApi {
 
     companion object {
         fun create(baseUrl: String): XtreamApi {
+            if (DemoServer.isDemo(baseUrl)) return DemoXtreamApi()
             val normalized = baseUrl.trim().trimEnd('/') + "/"
             val client = OkHttpClient.Builder()
                 .connectTimeout(15, TimeUnit.SECONDS)
