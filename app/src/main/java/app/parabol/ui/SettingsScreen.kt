@@ -84,7 +84,7 @@ fun SettingsScreen(vm: MainViewModel, onLogout: () -> Unit, onManageGroups: () -
                     }
                     Spacer(Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = { vm.loadAll() }) {
+                        OutlinedButton(onClick = { vm.loadAll(force = true) }) {
                             Text(stringResource(R.string.settings_refresh))
                         }
                         OutlinedButton(onClick = { profilePendingRemoval = vm.activeProfile }) {

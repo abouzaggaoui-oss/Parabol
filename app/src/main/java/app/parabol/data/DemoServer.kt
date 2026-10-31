@@ -126,9 +126,12 @@ class DemoXtreamApi : XtreamApi {
     override suspend fun getLiveCategories(username: String, password: String, action: String) = DemoServer.liveCategories
     override suspend fun getVodCategories(username: String, password: String, action: String) = DemoServer.vodCategories
     override suspend fun getSeriesCategories(username: String, password: String, action: String) = DemoServer.seriesCategories
-    override suspend fun getLiveStreams(username: String, password: String, action: String) = DemoServer.liveStreams
-    override suspend fun getVodStreams(username: String, password: String, action: String) = DemoServer.vodStreams
-    override suspend fun getSeries(username: String, password: String, action: String) = DemoServer.series
+    override suspend fun getLiveStreams(username: String, password: String, action: String, categoryId: String?) =
+        DemoServer.liveStreams.filter { categoryId == null || it.categoryId == categoryId }
+    override suspend fun getVodStreams(username: String, password: String, action: String, categoryId: String?) =
+        DemoServer.vodStreams.filter { categoryId == null || it.categoryId == categoryId }
+    override suspend fun getSeries(username: String, password: String, action: String, categoryId: String?) =
+        DemoServer.series.filter { categoryId == null || it.categoryId == categoryId }
     override suspend fun getSeriesInfo(username: String, password: String, seriesId: Int, action: String) =
         DemoServer.seriesInfo(seriesId)
     override suspend fun getShortEpg(username: String, password: String, streamId: Int, limit: Int, action: String) =

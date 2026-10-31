@@ -40,21 +40,27 @@ interface XtreamApi {
     suspend fun getLiveStreams(
         @Query("username") username: String,
         @Query("password") password: String,
-        @Query("action") action: String = "get_live_streams"
+        @Query("action") action: String = "get_live_streams",
+        /** Only this group; null = everything. Retrofit leaves a null parameter out. */
+        @Query("category_id") categoryId: String? = null
     ): List<LiveStream>
 
     @GET("player_api.php")
     suspend fun getVodStreams(
         @Query("username") username: String,
         @Query("password") password: String,
-        @Query("action") action: String = "get_vod_streams"
+        @Query("action") action: String = "get_vod_streams",
+        /** Only this group; null = everything. Retrofit leaves a null parameter out. */
+        @Query("category_id") categoryId: String? = null
     ): List<VodStream>
 
     @GET("player_api.php")
     suspend fun getSeries(
         @Query("username") username: String,
         @Query("password") password: String,
-        @Query("action") action: String = "get_series"
+        @Query("action") action: String = "get_series",
+        /** Only this group; null = everything. Retrofit leaves a null parameter out. */
+        @Query("category_id") categoryId: String? = null
     ): List<SeriesStream>
 
     @GET("player_api.php")

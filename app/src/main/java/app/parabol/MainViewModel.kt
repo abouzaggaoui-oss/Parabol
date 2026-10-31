@@ -14,6 +14,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -21,6 +23,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     val store = Store(app)
     private var api: XtreamApi? = null
+
+    /** Loaded content per account, kept on the device so the next start shows it at once. */
+    private val contentCache = ContentCache(java.io.File(app.filesDir, "content"))
+    private var snapshot: ContentSnapshot? = null
 
     // ---- UI state ----
     var isLoggedIn by mutableStateOf(false); private set
@@ -201,6 +207,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun clearContent() {
         loadAllJob?.cancel()
+        snapshot = null
         liveCategories = emptyList(); vodCategories = emptyList(); seriesCategories = emptyList()
         liveStreams = emptyList(); vodStreams = emptyList(); seriesList = emptyList()
         epgCache.clear()
@@ -219,6 +226,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             store.removeScheduledRecording(it.id)
         }
         store.removeProfile(id)
+        contentCache.delete(id)
         refreshProfiles()
         val next = store.activeProfile()
         if (next != null) {
@@ -242,34 +250,70 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---- Content ----
 
-    fun loadAll() {
+    /**
+     * Shows the content kept on the device right away, then fetches only what is missing:
+     * visible groups that were never loaded (new groups, or a group switched on in
+     * "Manage groups"). [force] ("Refresh content") fetches all visible groups again.
+     */
+    fun loadAll(force: Boolean = false) {
         val a = api ?: return
         val profile = store.activeProfile() ?: return
         val u = profile.username
         val p = profile.password
         loadAllJob?.cancel()
         loadAllJob = viewModelScope.launch {
-            loading = true
-            // The six calls are independent, so run them in parallel instead of one by one.
-            // Each returns null on failure, so one failing endpoint doesn't block the others.
+            if (snapshot == null) {
+                snapshot = withContext(Dispatchers.IO) { contentCache.load(profile.id) }
+                snapshot?.let { applySnapshot(it) }
+            }
+            val old = snapshot ?: ContentSnapshot()
+            // Only show "loading" when there is nothing to show yet.
+            loading = old.isEmpty
+            val hidden = hiddenGroups
             coroutineScope {
+                // The group lists are small; fetch them first (in parallel).
                 val lc = async { attempt { a.getLiveCategories(u, p) } }
                 val vc = async { attempt { a.getVodCategories(u, p) } }
                 val sc = async { attempt { a.getSeriesCategories(u, p) } }
-                val ls = async { attempt { a.getLiveStreams(u, p) } }
-                val vs = async { attempt { a.getVodStreams(u, p) } }
-                val sl = async { attempt { a.getSeries(u, p) } }
-                val results = listOf(lc.await(), vc.await(), sc.await(), ls.await(), vs.await(), sl.await())
-                lc.await()?.let { liveCategories = it }
-                vc.await()?.let { vodCategories = it }
-                sc.await()?.let { seriesCategories = it }
-                ls.await()?.let { liveStreams = it }
-                vs.await()?.let { vodStreams = it }
-                sl.await()?.let { seriesList = it }
-                contentError = results.all { it == null }
+                val liveCats = lc.await() ?: old.liveCategories.orEmpty()
+                val vodCats = vc.await() ?: old.vodCategories.orEmpty()
+                val seriesCats = sc.await() ?: old.seriesCategories.orEmpty()
+                liveCategories = liveCats; vodCategories = vodCats; seriesCategories = seriesCats
+
+                val live = async {
+                    ContentLoader.refresh(liveCats, old.live.orEmpty(), { "live:$it" in hidden }, force,
+                        { it.categoryId }, { attempt { a.getLiveStreams(u, p) } },
+                        { id -> attempt { a.getLiveStreams(u, p, categoryId = id) } })
+                }
+                val vod = async {
+                    ContentLoader.refresh(vodCats, old.vod.orEmpty(), { "vod:$it" in hidden }, force,
+                        { it.categoryId }, { attempt { a.getVodStreams(u, p) } },
+                        { id -> attempt { a.getVodStreams(u, p, categoryId = id) } })
+                }
+                val series = async {
+                    ContentLoader.refresh(seriesCats, old.series.orEmpty(), { "series:$it" in hidden }, force,
+                        { it.categoryId }, { attempt { a.getSeries(u, p) } },
+                        { id -> attempt { a.getSeries(u, p, categoryId = id) } })
+                }
+                val l = live.await(); val v = vod.await(); val s = series.await()
+                val next = ContentSnapshot(liveCats, vodCats, seriesCats, l.groups, v.groups, s.groups)
+                snapshot = next
+                applySnapshot(next)
+                val nothingLoaded = lc.await() == null && vc.await() == null && sc.await() == null
+                contentError = (nothingLoaded || (l.failed && v.failed && s.failed)) && next.isEmpty
+                if (next != old) withContext(Dispatchers.IO) { contentCache.save(profile.id, next) }
             }
             loading = false
         }
+    }
+
+    private fun applySnapshot(s: ContentSnapshot) {
+        if (!s.liveCategories.isNullOrEmpty()) liveCategories = s.liveCategories
+        if (!s.vodCategories.isNullOrEmpty()) vodCategories = s.vodCategories
+        if (!s.seriesCategories.isNullOrEmpty()) seriesCategories = s.seriesCategories
+        liveStreams = s.live.orEmpty().values.flatten()
+        vodStreams = s.vod.orEmpty().values.flatten()
+        seriesList = s.series.orEmpty().values.flatten()
     }
 
     fun channelsInCategory(categoryId: String): List<LiveStream> =
@@ -304,6 +348,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         if (!next.add(key)) next.remove(key)
         hiddenGroups = next
         store.setHiddenGroups(next)
+        if (key !in next) loadAll() // now visible: fetched if it was never loaded
     }
 
     fun visibleCategories(type: String, all: List<Category>): List<Category> =
@@ -473,6 +518,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
         hiddenGroups = next
         store.setHiddenGroups(next)
+        if (!hidden) loadAll() // fetch groups that are now visible but were never loaded
     }
 
 
