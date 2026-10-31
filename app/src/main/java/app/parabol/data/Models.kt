@@ -130,3 +130,24 @@ data class EpgListing(
         }
     }
 }
+
+/**
+ * Guide data from providers often has duplicates and programmes that overlap (two sources
+ * merged, or a programme listed twice with slightly different times). Shown as they are,
+ * blocks and titles in the guide fall on top of each other. This keeps one programme per
+ * time slot: sorted by start, without empty or duplicate entries, and a programme that
+ * starts before the previous one ends begins where that one ends (or is left out when it
+ * lies completely inside it).
+ */
+fun List<EpgListing>.withoutOverlaps(): List<EpgListing> {
+    val result = ArrayList<EpgListing>(size)
+    var lastEnd = Long.MIN_VALUE
+    for (p in sortedWith(compareBy<EpgListing>({ it.startSeconds(0) }, { -it.stopSeconds(0) }))) {
+        val start = p.startSeconds(0)
+        val stop = p.stopSeconds(0)
+        if (stop <= start || stop <= lastEnd) continue // empty, or inside the previous programme
+        result += if (start < lastEnd) p.copy(startTimestamp = lastEnd.toString()) else p
+        lastEnd = stop
+    }
+    return result
+}

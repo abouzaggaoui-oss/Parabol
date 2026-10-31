@@ -2,6 +2,10 @@
 
 De desktopversie van Parabol, gebouwd met Electron. Parabol bevat geen content: je speelt af van je eigen aanbieder (Xtream Codes API). Vanaf **v2.2.0** heeft hij dezelfde opzet en functies als de Android-app v2.2.0.
 
+## Nieuw in v2.6.3
+
+- **Tv-gids leesbaar**: veel aanbieders leveren dubbele of overlappende programma's aan, waardoor blokken en titels in de tv-gids over elkaar heen vielen. Parabol toont nu per tijdvak één programma: dubbele worden weggelaten en een overlappend programma begint waar het vorige eindigt.
+
 ## Nieuw in v2.6.1
 
 De eerste keer laden is weer even snel als vóór 2.6.0, en de opgeslagen lijsten worden alleen nog bijgewerkt als er iets veranderd is.

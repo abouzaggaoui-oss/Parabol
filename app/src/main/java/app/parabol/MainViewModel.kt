@@ -448,7 +448,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
             epgInFlight.remove(streamId)
             if (r != null) {
-                epgCache[streamId] = ShortEpg(r.listings ?: emptyList(), System.currentTimeMillis())
+                epgCache[streamId] = ShortEpg(r.listings.orEmpty().withoutOverlaps(), System.currentTimeMillis())
             }
         }
     }
@@ -521,7 +521,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         epgJob?.cancel()
         epgJob = viewModelScope.launch {
             fullEpg = attempt { a.getFullEpg(profileUsername, profilePassword, streamId) }
-                ?.listings ?: emptyList()
+                ?.listings.orEmpty().withoutOverlaps()
             epgLoading = false
         }
     }

@@ -264,6 +264,28 @@ function countryName(code) {
 function startSec(item) { return (parseInt(item.start_timestamp, 10) || 0) + M.epgOffset * 3600; }
 function stopSec(item) { return (parseInt(item.stop_timestamp, 10) || 0) + M.epgOffset * 3600; }
 
+/**
+ * Provider guides often contain duplicates and overlapping programmes, which made blocks
+ * and titles in the guide fall on top of each other. Keeps one programme per time slot
+ * (same rules as Android): sorted, no empty or duplicate entries, and an overlapping
+ * programme starts where the previous one ends, or is left out when it lies inside it.
+ */
+function withoutOverlaps(listings) {
+  const raw = (x, k) => parseInt(x[k], 10) || 0;
+  const sorted = arr(listings).slice().sort((a, b) =>
+    raw(a, 'start_timestamp') - raw(b, 'start_timestamp') || raw(b, 'stop_timestamp') - raw(a, 'stop_timestamp'));
+  const out = [];
+  let lastEnd = -Infinity;
+  sorted.forEach((p) => {
+    const start = raw(p, 'start_timestamp');
+    const stop = raw(p, 'stop_timestamp');
+    if (stop <= start || stop <= lastEnd) return;
+    out.push(start < lastEnd ? { ...p, start_timestamp: String(lastEnd) } : p);
+    lastEnd = stop;
+  });
+  return out;
+}
+
 const epgQueue = [];
 const epgInFlight = new Set();
 let epgActive = 0;
@@ -283,7 +305,7 @@ function pumpEpg() {
     const id = epgQueue.shift();
     epgActive++;
     Xtream.getShortEpg(id, 10)
-      .then((r) => { M.epgCache.set(id, { listings: arr(r && r.epg_listings), fetchedAt: Date.now() }); })
+      .then((r) => { M.epgCache.set(id, { listings: withoutOverlaps(r && r.epg_listings), fetchedAt: Date.now() }); })
       .catch(() => { M.epgCache.set(id, { listings: [], fetchedAt: Date.now() - 12 * 60000 }); })
       .finally(() => {
         epgActive--;

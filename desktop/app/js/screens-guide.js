@@ -73,7 +73,7 @@ SCREENS.guide = ({ channel }) => {
     render();
     Xtream.getFullEpg(channel.stream_id)
       .then((r) => {
-        listings = arr(r && r.epg_listings).slice().sort((a, b) => startSec(a) - startSec(b));
+        listings = withoutOverlaps(r && r.epg_listings);
         render();
       })
       .catch(() => { listings = 'error'; render(); });

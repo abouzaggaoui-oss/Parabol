@@ -1,5 +1,9 @@
 # Wijzigingen (Android)
 
+## Nieuw in v2.6.3
+
+- **Tv-gids leesbaar**: veel aanbieders leveren dubbele of overlappende programma's aan, waardoor blokken en titels in de tv-gids over elkaar heen vielen. Parabol toont nu per tijdvak één programma: dubbele worden weggelaten en een overlappend programma begint waar het vorige eindigt.
+
 ## Nieuw in v2.6.2
 
 - **Opgeslagen lijsten meteen in beeld**: Parabol wachtte bij het openen van een account eerst op het inloggen bij de aanbieder en las pas daarna de opgeslagen lijsten. Nu staan ze er direct; inloggen gebeurt tegelijk op de achtergrond. Live tv komt eerst, daarna films en series.
