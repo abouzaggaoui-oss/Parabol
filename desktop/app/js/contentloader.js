@@ -14,9 +14,10 @@ const ContentLoader = {
     const known = new Set(categories.map((c) => String(c.category_id)));
     const kept = {};
     Object.keys(cached || {}).forEach((id) => { if (!categories.length || known.has(id)) kept[id] = cached[id]; });
+    const pruned = Object.keys(kept).length !== Object.keys(cached || {}).length;
     const visible = [...known].filter((id) => !isHidden(id));
     const needed = force ? visible : visible.filter((id) => !(id in kept));
-    if (!needed.length) return { groups: kept, failed: false };
+    if (!needed.length) return { groups: kept, failed: false, changed: pruned };
 
     const groupAll = (items) => {
       const grouped = {};
@@ -29,17 +30,18 @@ const ContentLoader = {
 
     if (!Object.keys(kept).length || needed.length > this.BULK_THRESHOLD) {
       const all = await fetchAll();
-      if (!all) return { groups: kept, failed: true };
-      return { groups: groupAll(all), failed: false };
+      if (!all) return { groups: kept, failed: true, changed: pruned };
+      return { groups: groupAll(all), failed: false, changed: true };
     }
 
     const result = { ...kept };
     let failed = false;
+    let fetched = false;
     const first = needed[0];
     const firstItems = await fetchGroup(first);
     if (!firstItems) failed = true;
-    else if (firstItems.some((x) => String(categoryOf(x)) !== first)) return { groups: groupAll(firstItems), failed: false };
-    else result[first] = firstItems;
+    else if (firstItems.some((x) => String(categoryOf(x)) !== first)) return { groups: groupAll(firstItems), failed: false, changed: true };
+    else { result[first] = firstItems; fetched = true; }
 
     const rest = needed.slice(1);
     let next = 0;
@@ -48,11 +50,11 @@ const ContentLoader = {
         const id = rest[next++];
         const items = await fetchGroup(id);
         if (!items) failed = true;
-        else result[id] = items.filter((x) => String(categoryOf(x)) === id);
+        else { result[id] = items.filter((x) => String(categoryOf(x)) === id); fetched = true; }
       }
     };
     await Promise.all(Array.from({ length: Math.min(this.PARALLEL, rest.length) }, worker));
-    return { groups: result, failed };
+    return { groups: result, failed, changed: fetched || pruned };
   },
 };
 

@@ -60,6 +60,13 @@ async function loadAll(force = false) {
   emitChange('loading');
 
   const safe = (promise) => promise.then((x) => (Array.isArray(x) ? x : null), () => null);
+  // Nothing stored yet for a type: everything will be fetched anyway, so start that now.
+  const empty = (g) => !Object.keys(g || {}).length;
+  const pre = {
+    live: empty(old.live) ? safe(Xtream.getLiveStreams()) : null,
+    vod: empty(old.vod) ? safe(Xtream.getVodStreams()) : null,
+    series: empty(old.series) ? safe(Xtream.getSeries()) : null,
+  };
   const [info, lc, vc, sc] = await Promise.all([
     Xtream.login().catch(() => null),
     safe(Xtream.getLiveCategories()),
@@ -78,7 +85,7 @@ async function loadAll(force = false) {
     isHidden: (id) => hidden.has(`${type}:${id}`),
     force,
     categoryOf: (x) => x.category_id,
-    fetchAll: () => safe(get()),
+    fetchAll: () => pre[type] || safe(get()),
     fetchGroup: (id) => safe(get(id)),
   });
   const [l, v, s] = await Promise.all([
@@ -88,12 +95,17 @@ async function loadAll(force = false) {
   ]);
   if (token !== M._loadToken) return;
   const next = { liveCategories: liveCats, vodCategories: vodCats, seriesCategories: seriesCats, live: l.groups, vod: v.groups, series: s.groups };
+  const groupsChanged = JSON.stringify([liveCats, vodCats, seriesCats]) !==
+    JSON.stringify([old.liveCategories || [], old.vodCategories || [], old.seriesCategories || []]);
   M.snapshot = next;
   applySnapshot(next);
   M.loadError = ((!lc && !vc && !sc) || (l.failed && v.failed && s.failed)) && isEmpty(next);
   M.loading = false;
   emitChange('data');
-  if (api && api.saveContent) api.saveContent(profile.id, next).catch(() => {});
+  // Only written when something changed; never waited for, so the screen is ready first.
+  if (api && api.saveContent && (groupsChanged || l.changed || v.changed || s.changed)) {
+    api.saveContent(profile.id, next).catch(() => {});
+  }
 }
 
 function applySnapshot(s) {

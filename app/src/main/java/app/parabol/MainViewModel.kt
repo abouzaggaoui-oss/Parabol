@@ -279,7 +279,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             val hidden = hiddenGroups
             try {
                 coroutineScope {
-                    // The group lists are small; fetch them first (in parallel).
+                    // Nothing stored yet for a type: everything will be fetched anyway, so start
+                    // that right away, together with the (small) group lists.
+                    val liveAll = if (old.live.isNullOrEmpty()) async { attempt { a.getLiveStreams(u, p) } } else null
+                    val vodAll = if (old.vod.isNullOrEmpty()) async { attempt { a.getVodStreams(u, p) } } else null
+                    val seriesAll = if (old.series.isNullOrEmpty()) async { attempt { a.getSeries(u, p) } } else null
                     val lc = async { attempt { a.getLiveCategories(u, p) } }
                     val vc = async { attempt { a.getVodCategories(u, p) } }
                     val sc = async { attempt { a.getSeriesCategories(u, p) } }
@@ -294,7 +298,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     // Each type is shown and saved as soon as it is done, without waiting for the others.
                     val live = async {
                         ContentLoader.refresh(liveCats, old.live.orEmpty(), { "live:$it" in hidden }, force,
-                            { it.categoryId }, { attempt { a.getLiveStreams(u, p) } },
+                            { it.categoryId }, { liveAll?.await() ?: attempt { a.getLiveStreams(u, p) } },
                             { id -> attempt { a.getLiveStreams(u, p, categoryId = id) } }
                         ).also { o ->
                             liveStreams = o.groups.values.flatten()
@@ -303,7 +307,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     }
                     val vod = async {
                         ContentLoader.refresh(vodCats, old.vod.orEmpty(), { "vod:$it" in hidden }, force,
-                            { it.categoryId }, { attempt { a.getVodStreams(u, p) } },
+                            { it.categoryId }, { vodAll?.await() ?: attempt { a.getVodStreams(u, p) } },
                             { id -> attempt { a.getVodStreams(u, p, categoryId = id) } }
                         ).also { o ->
                             vodStreams = o.groups.values.flatten()
@@ -312,7 +316,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     }
                     val series = async {
                         ContentLoader.refresh(seriesCats, old.series.orEmpty(), { "series:$it" in hidden }, force,
-                            { it.categoryId }, { attempt { a.getSeries(u, p) } },
+                            { it.categoryId }, { seriesAll?.await() ?: attempt { a.getSeries(u, p) } },
                             { id -> attempt { a.getSeries(u, p, categoryId = id) } }
                         ).also { o ->
                             seriesList = o.groups.values.flatten()

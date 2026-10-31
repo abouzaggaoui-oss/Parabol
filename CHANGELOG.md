@@ -1,5 +1,11 @@
 # Wijzigingen (Android)
 
+## Nieuw in v2.6.1
+
+- **Content wordt nu echt onthouden.** In 2.6.0 werd het bewaren pas gedaan nadat alles geladen was, en bij een grote aanbieder duurde dat op een tv lang. Werd de app in die tijd gesloten, dan was er niets bewaard en laadde de volgende start alles opnieuw. Nu bewaart Parabol live tv, films en series elk apart, op de achtergrond.
+- **"Content laden" verdwijnt** zodra de lijsten in beeld zijn; het bewaren gebeurt daarna ongemerkt.
+- **De eerste keer laden is weer even snel als vóór 2.6.0**: alles wordt tegelijk opgehaald in plaats van na elkaar.
+
 ## Nieuw in v2.6.0
 
 - **Sneller starten**: Parabol onthoudt zenders, films en series op het toestel en toont ze bij het starten meteen.

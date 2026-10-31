@@ -2,6 +2,10 @@
 
 De desktopversie van Parabol, gebouwd met Electron. Parabol bevat geen content: je speelt af van je eigen aanbieder (Xtream Codes API). Vanaf **v2.2.0** heeft hij dezelfde opzet en functies als de Android-app v2.2.0.
 
+## Nieuw in v2.6.1
+
+De eerste keer laden is weer even snel als vóór 2.6.0, en de opgeslagen lijsten worden alleen nog bijgewerkt als er iets veranderd is.
+
 ## Nieuw in v2.6.0
 
 - **Sneller starten**: Parabol onthoudt zenders, films en series op het toestel en toont ze bij het starten meteen.
