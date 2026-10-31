@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.sync.withLock
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -27,6 +28,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     /** Loaded content per account, kept on the device so the next start shows it at once. */
     private val contentCache = ContentCache(java.io.File(app.filesDir, "content"))
     private var snapshot: ContentSnapshot? = null
+    private var loadToken = 0
+    private val saveScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO)
+    private val saveLock = kotlinx.coroutines.sync.Mutex()
 
     // ---- UI state ----
     var isLoggedIn by mutableStateOf(false); private set
@@ -226,7 +230,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             store.removeScheduledRecording(it.id)
         }
         store.removeProfile(id)
-        contentCache.delete(id)
+        saveScope.launch { saveLock.withLock { contentCache.delete(id) } }
         refreshProfiles()
         val next = store.activeProfile()
         if (next != null) {
@@ -261,8 +265,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val u = profile.username
         val p = profile.password
         loadAllJob?.cancel()
+        val token = ++loadToken
         loadAllJob = viewModelScope.launch {
             if (snapshot == null) {
+                // Reading a large stored list takes a moment: show "loading" meanwhile.
+                loading = true
                 snapshot = withContext(Dispatchers.IO) { contentCache.load(profile.id) }
                 snapshot?.let { applySnapshot(it) }
             }
@@ -270,41 +277,67 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             // Only show "loading" when there is nothing to show yet.
             loading = old.isEmpty
             val hidden = hiddenGroups
-            coroutineScope {
-                // The group lists are small; fetch them first (in parallel).
-                val lc = async { attempt { a.getLiveCategories(u, p) } }
-                val vc = async { attempt { a.getVodCategories(u, p) } }
-                val sc = async { attempt { a.getSeriesCategories(u, p) } }
-                val liveCats = lc.await() ?: old.liveCategories.orEmpty()
-                val vodCats = vc.await() ?: old.vodCategories.orEmpty()
-                val seriesCats = sc.await() ?: old.seriesCategories.orEmpty()
-                liveCategories = liveCats; vodCategories = vodCats; seriesCategories = seriesCats
+            try {
+                coroutineScope {
+                    // The group lists are small; fetch them first (in parallel).
+                    val lc = async { attempt { a.getLiveCategories(u, p) } }
+                    val vc = async { attempt { a.getVodCategories(u, p) } }
+                    val sc = async { attempt { a.getSeriesCategories(u, p) } }
+                    val liveCats = lc.await() ?: old.liveCategories.orEmpty()
+                    val vodCats = vc.await() ?: old.vodCategories.orEmpty()
+                    val seriesCats = sc.await() ?: old.seriesCategories.orEmpty()
+                    liveCategories = liveCats; vodCategories = vodCats; seriesCategories = seriesCats
+                    if (liveCats != old.liveCategories.orEmpty() || vodCats != old.vodCategories.orEmpty() ||
+                        seriesCats != old.seriesCategories.orEmpty()
+                    ) persist(profile.id) { contentCache.saveGroups(it, liveCats, vodCats, seriesCats) }
 
-                val live = async {
-                    ContentLoader.refresh(liveCats, old.live.orEmpty(), { "live:$it" in hidden }, force,
-                        { it.categoryId }, { attempt { a.getLiveStreams(u, p) } },
-                        { id -> attempt { a.getLiveStreams(u, p, categoryId = id) } })
+                    // Each type is shown and saved as soon as it is done, without waiting for the others.
+                    val live = async {
+                        ContentLoader.refresh(liveCats, old.live.orEmpty(), { "live:$it" in hidden }, force,
+                            { it.categoryId }, { attempt { a.getLiveStreams(u, p) } },
+                            { id -> attempt { a.getLiveStreams(u, p, categoryId = id) } }
+                        ).also { o ->
+                            liveStreams = o.groups.values.flatten()
+                            if (o.changed) persist(profile.id) { contentCache.saveContent(it, "live", o.groups) }
+                        }
+                    }
+                    val vod = async {
+                        ContentLoader.refresh(vodCats, old.vod.orEmpty(), { "vod:$it" in hidden }, force,
+                            { it.categoryId }, { attempt { a.getVodStreams(u, p) } },
+                            { id -> attempt { a.getVodStreams(u, p, categoryId = id) } }
+                        ).also { o ->
+                            vodStreams = o.groups.values.flatten()
+                            if (o.changed) persist(profile.id) { contentCache.saveContent(it, "vod", o.groups) }
+                        }
+                    }
+                    val series = async {
+                        ContentLoader.refresh(seriesCats, old.series.orEmpty(), { "series:$it" in hidden }, force,
+                            { it.categoryId }, { attempt { a.getSeries(u, p) } },
+                            { id -> attempt { a.getSeries(u, p, categoryId = id) } }
+                        ).also { o ->
+                            seriesList = o.groups.values.flatten()
+                            if (o.changed) persist(profile.id) { contentCache.saveContent(it, "series", o.groups) }
+                        }
+                    }
+                    val l = live.await(); val v = vod.await(); val s = series.await()
+                    val next = ContentSnapshot(liveCats, vodCats, seriesCats, l.groups, v.groups, s.groups)
+                    snapshot = next
+                    val nothingLoaded = lc.await() == null && vc.await() == null && sc.await() == null
+                    contentError = (nothingLoaded || (l.failed && v.failed && s.failed)) && next.isEmpty
                 }
-                val vod = async {
-                    ContentLoader.refresh(vodCats, old.vod.orEmpty(), { "vod:$it" in hidden }, force,
-                        { it.categoryId }, { attempt { a.getVodStreams(u, p) } },
-                        { id -> attempt { a.getVodStreams(u, p, categoryId = id) } })
-                }
-                val series = async {
-                    ContentLoader.refresh(seriesCats, old.series.orEmpty(), { "series:$it" in hidden }, force,
-                        { it.categoryId }, { attempt { a.getSeries(u, p) } },
-                        { id -> attempt { a.getSeries(u, p, categoryId = id) } })
-                }
-                val l = live.await(); val v = vod.await(); val s = series.await()
-                val next = ContentSnapshot(liveCats, vodCats, seriesCats, l.groups, v.groups, s.groups)
-                snapshot = next
-                applySnapshot(next)
-                val nothingLoaded = lc.await() == null && vc.await() == null && sc.await() == null
-                contentError = (nothingLoaded || (l.failed && v.failed && s.failed)) && next.isEmpty
-                if (next != old) withContext(Dispatchers.IO) { contentCache.save(profile.id, next) }
+            } finally {
+                if (token == loadToken) loading = false // a newer load manages the flag itself
             }
-            loading = false
         }
+    }
+
+    /**
+     * Saves in the background, outside the loading job: the screen never waits for it,
+     * and a newer load (or leaving the screen) doesn't cut a save off halfway.
+     * Saves run one at a time.
+     */
+    private fun persist(profileId: String, block: (String) -> Unit) {
+        saveScope.launch { saveLock.withLock { block(profileId) } }
     }
 
     private fun applySnapshot(s: ContentSnapshot) {
