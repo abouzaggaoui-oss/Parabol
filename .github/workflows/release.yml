@@ -60,7 +60,12 @@ jobs:
           echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/parabol-release.jks"
           export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/parabol-release.jks"
           chmod +x gradlew
-          ./gradlew assembleRelease bundleRelease --no-daemon
+          set -o pipefail
+          ./gradlew assembleRelease bundleRelease --no-daemon 2>&1 | tee build.log || {
+            errors=$(grep -E '^e: |What went wrong|^> [^T]|FAILED|Error:|Caused by|lint' build.log | head -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=Release build errors::${errors}"
+            exit 1
+          }
           # Fail if the APK isn't signed with the registered Parabol key.
           EXPECTED="D6:4B:18:1B:3E:6C:74:15:E4:DF:E3:A5:C8:19:41:47:33:7E:9F:A5:21:67:F8:B7:65:E9:44:AD:5C:BE:F9:9D"
           keytool -printcert -jarfile app/build/outputs/apk/release/app-release.apk | grep -q "SHA256: $EXPECTED" \
