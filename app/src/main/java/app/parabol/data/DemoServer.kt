@@ -122,16 +122,27 @@ object DemoServer {
 
 /** [XtreamApi] answered entirely from [DemoServer], without any network calls. */
 class DemoXtreamApi : XtreamApi {
+    companion object {
+        /** Number of channel/movie/series list requests (tests check that stored content is reused). */
+        @Volatile var listRequests = 0
+    }
+
     override suspend fun login(username: String, password: String) = DemoServer.login(username, password)
     override suspend fun getLiveCategories(username: String, password: String, action: String) = DemoServer.liveCategories
     override suspend fun getVodCategories(username: String, password: String, action: String) = DemoServer.vodCategories
     override suspend fun getSeriesCategories(username: String, password: String, action: String) = DemoServer.seriesCategories
-    override suspend fun getLiveStreams(username: String, password: String, action: String, categoryId: String?) =
-        DemoServer.liveStreams.filter { categoryId == null || it.categoryId == categoryId }
-    override suspend fun getVodStreams(username: String, password: String, action: String, categoryId: String?) =
-        DemoServer.vodStreams.filter { categoryId == null || it.categoryId == categoryId }
-    override suspend fun getSeries(username: String, password: String, action: String, categoryId: String?) =
-        DemoServer.series.filter { categoryId == null || it.categoryId == categoryId }
+    override suspend fun getLiveStreams(username: String, password: String, action: String, categoryId: String?): List<LiveStream> {
+        listRequests++
+        return DemoServer.liveStreams.filter { categoryId == null || it.categoryId == categoryId }
+    }
+    override suspend fun getVodStreams(username: String, password: String, action: String, categoryId: String?): List<VodStream> {
+        listRequests++
+        return DemoServer.vodStreams.filter { categoryId == null || it.categoryId == categoryId }
+    }
+    override suspend fun getSeries(username: String, password: String, action: String, categoryId: String?): List<SeriesStream> {
+        listRequests++
+        return DemoServer.series.filter { categoryId == null || it.categoryId == categoryId }
+    }
     override suspend fun getSeriesInfo(username: String, password: String, seriesId: Int, action: String) =
         DemoServer.seriesInfo(seriesId)
     override suspend fun getShortEpg(username: String, password: String, streamId: Int, limit: Int, action: String) =
