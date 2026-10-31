@@ -40,14 +40,17 @@ const Xtream = {
   getSeriesCategories() {
     return this.call('get_series_categories');
   },
-  getLiveStreams() {
-    return this.call('get_live_streams');
+  /** categoryId: only that group; leave out for everything. */
+  getLiveStreams(categoryId) {
+    return this.call('get_live_streams', categoryId != null ? { category_id: categoryId } : {});
   },
-  getVodStreams() {
-    return this.call('get_vod_streams');
+  /** categoryId: only that group; leave out for everything. */
+  getVodStreams(categoryId) {
+    return this.call('get_vod_streams', categoryId != null ? { category_id: categoryId } : {});
   },
-  getSeries() {
-    return this.call('get_series');
+  /** categoryId: only that group; leave out for everything. */
+  getSeries(categoryId) {
+    return this.call('get_series', categoryId != null ? { category_id: categoryId } : {});
   },
   getSeriesInfo(seriesId) {
     return this.call('get_series_info', { series_id: seriesId });

@@ -1,5 +1,12 @@
 # Wijzigingen (Android)
 
+## Nieuw in v2.6.0
+
+- **Sneller starten**: Parabol onthoudt zenders, films en series op het toestel en toont ze bij het starten meteen.
+- **Alleen ophalen wat ontbreekt**: bij het starten haalt Parabol alleen groepen op die nieuw zijn of die je net hebt aangezet in Groepen beheren. Groepen die al geladen zijn, worden niet opnieuw opgehaald.
+- **Instellingen › Inhoud vernieuwen** haalt alle zichtbare groepen opnieuw op, bijvoorbeeld voor nieuwe films in een bestaande groep.
+- Bij weinig groepen tegelijk vraagt Parabol per groep op; bij veel groepen in één keer, omdat dat dan sneller is.
+
 ## Nieuw in v2.5.3
 
 - **Tekstvelden met de afstandsbediening**: met omhoog en omlaag ga je naar het vorige of volgende veld (inloggen, account toevoegen, Groepen beheren en de zoekvelden). Op het schermtoetsenbord brengt *Volgende* je naar het volgende veld.

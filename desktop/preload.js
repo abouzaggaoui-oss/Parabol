@@ -11,6 +11,9 @@ contextBridge.exposeInMainWorld('parabolAPI', {
   cancelRecording: (id) => ipcRenderer.invoke('recordings:cancel', id),
   deleteCompletedRecording: (id) => ipcRenderer.invoke('recordings:deleteCompleted', id),
   getRecordings: () => ipcRenderer.invoke('recordings:getAll'),
+  loadContent: (profileId) => ipcRenderer.invoke('content:load', profileId),
+  saveContent: (profileId, data) => ipcRenderer.invoke('content:save', profileId, data),
+  deleteContent: (profileId) => ipcRenderer.invoke('content:delete', profileId),
   openRecordingsFolder: () => ipcRenderer.invoke('recordings:openFolder'),
   onRecordingsChanged: (callback) => {
     ipcRenderer.on('recordings:changed', (_event, data) => callback(data));

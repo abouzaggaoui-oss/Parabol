@@ -1,6 +1,6 @@
 {
   "name": "parabol-desktop",
-  "version": "2.5.2",
+  "version": "2.6.0",
   "description": "Parabol media player for Windows and macOS",
   "main": "main.js",
   "author": "Parabol",

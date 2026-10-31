@@ -2,6 +2,13 @@
 
 De desktopversie van Parabol, gebouwd met Electron. Parabol bevat geen content: je speelt af van je eigen aanbieder (Xtream Codes API). Vanaf **v2.2.0** heeft hij dezelfde opzet en functies als de Android-app v2.2.0.
 
+## Nieuw in v2.6.0
+
+- **Sneller starten**: Parabol onthoudt zenders, films en series op het toestel en toont ze bij het starten meteen.
+- **Alleen ophalen wat ontbreekt**: bij het starten haalt Parabol alleen groepen op die nieuw zijn of die je net hebt aangezet in Groepen beheren. Groepen die al geladen zijn, worden niet opnieuw opgehaald.
+- **Instellingen › Vernieuwen** haalt alle zichtbare groepen opnieuw op, bijvoorbeeld voor nieuwe films in een bestaande groep.
+- Bij weinig groepen tegelijk vraagt Parabol per groep op; bij veel groepen in één keer, omdat dat dan sneller is.
+
 ## Nieuw in v2.5.2
 
 Ingebouwd demo-account: log in met server-URL `demo`, gebruikersnaam `demo` en wachtwoord `demo` om Parabol te proberen zonder abonnement. Verzonnen zenders en tv-gids; de video's zijn de open films van de [Blender Foundation](https://www.blender.org) (CC BY 3.0). Desktop en Android hebben nu hetzelfde versienummer.

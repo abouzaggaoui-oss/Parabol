@@ -19,6 +19,7 @@ const M = {
   lastLiveGroupId: null,
   listeners: new Set(),
   _loadToken: 0,
+  snapshot: null, // content of the active account as kept on disk
 };
 
 /** Screens subscribe to re-render when data changes (favorites, groups, EPG, recordings…). */
@@ -37,36 +38,72 @@ function applyProfileSettings() {
   M.lastLiveGroupId = null;
 }
 
-/** Loads all lists of the active account. Newer calls win over slower older ones. */
-async function loadAll() {
+/**
+ * Shows the content kept on disk right away, then fetches only what is missing: visible
+ * groups that were never loaded (new groups, or a group switched on in Groepen beheren).
+ * force ("Vernieuwen") fetches all visible groups again. Newer calls win over older ones.
+ */
+async function loadAll(force = false) {
   const token = ++M._loadToken;
-  M.loading = true;
+  const profile = Store.activeProfile();
+  const api = window.parabolAPI;
+  if (!profile) return;
+  if (!M.snapshot && api && api.loadContent) {
+    const stored = await api.loadContent(profile.id).catch(() => null);
+    if (token !== M._loadToken) return;
+    if (stored) { M.snapshot = stored; applySnapshot(stored); emitChange('data'); }
+  }
+  const old = M.snapshot || {};
+  const isEmpty = (s) => !Object.keys(s.live || {}).length && !Object.keys(s.vod || {}).length && !Object.keys(s.series || {}).length;
+  M.loading = isEmpty(old); // only "loading" when there is nothing to show yet
   M.loadError = false;
   emitChange('loading');
-  try {
-    const [info, lc, vc, sc, ls, vs, sl] = await Promise.all([
-      Xtream.login().catch(() => null),
-      Xtream.getLiveCategories(),
-      Xtream.getVodCategories(),
-      Xtream.getSeriesCategories(),
-      Xtream.getLiveStreams(),
-      Xtream.getVodStreams(),
-      Xtream.getSeries(),
-    ]);
-    if (token !== M._loadToken) return;
-    M.userInfo = info && info.user_info ? info.user_info : M.userInfo;
-    M.liveCategories = arr(lc);
-    M.vodCategories = arr(vc);
-    M.seriesCategories = arr(sc);
-    M.liveStreams = uniqueBy(arr(ls), (s) => s.stream_id);
-    M.vodStreams = uniqueBy(arr(vs), (s) => s.stream_id);
-    M.seriesList = uniqueBy(arr(sl), (s) => s.series_id);
-  } catch (e) {
-    if (token !== M._loadToken) return;
-    M.loadError = true;
-  }
+
+  const safe = (promise) => promise.then((x) => (Array.isArray(x) ? x : null), () => null);
+  const [info, lc, vc, sc] = await Promise.all([
+    Xtream.login().catch(() => null),
+    safe(Xtream.getLiveCategories()),
+    safe(Xtream.getVodCategories()),
+    safe(Xtream.getSeriesCategories()),
+  ]);
+  if (token !== M._loadToken) return;
+  if (info && info.user_info) M.userInfo = info.user_info;
+  const liveCats = lc || old.liveCategories || [];
+  const vodCats = vc || old.vodCategories || [];
+  const seriesCats = sc || old.seriesCategories || [];
+  const hidden = new Set(M.hiddenGroups);
+  const one = (type, cats, cached, get) => ContentLoader.refresh({
+    categories: cats,
+    cached,
+    isHidden: (id) => hidden.has(`${type}:${id}`),
+    force,
+    categoryOf: (x) => x.category_id,
+    fetchAll: () => safe(get()),
+    fetchGroup: (id) => safe(get(id)),
+  });
+  const [l, v, s] = await Promise.all([
+    one('live', liveCats, old.live, (id) => Xtream.getLiveStreams(id)),
+    one('vod', vodCats, old.vod, (id) => Xtream.getVodStreams(id)),
+    one('series', seriesCats, old.series, (id) => Xtream.getSeries(id)),
+  ]);
+  if (token !== M._loadToken) return;
+  const next = { liveCategories: liveCats, vodCategories: vodCats, seriesCategories: seriesCats, live: l.groups, vod: v.groups, series: s.groups };
+  M.snapshot = next;
+  applySnapshot(next);
+  M.loadError = ((!lc && !vc && !sc) || (l.failed && v.failed && s.failed)) && isEmpty(next);
   M.loading = false;
   emitChange('data');
+  if (api && api.saveContent) api.saveContent(profile.id, next).catch(() => {});
+}
+
+function applySnapshot(s) {
+  if ((s.liveCategories || []).length) M.liveCategories = s.liveCategories;
+  if ((s.vodCategories || []).length) M.vodCategories = s.vodCategories;
+  if ((s.seriesCategories || []).length) M.seriesCategories = s.seriesCategories;
+  const flat = (groups) => Object.values(groups || {}).flat();
+  M.liveStreams = uniqueBy(flat(s.live), (x) => x.stream_id);
+  M.vodStreams = uniqueBy(flat(s.vod), (x) => x.stream_id);
+  M.seriesList = uniqueBy(flat(s.series), (x) => x.series_id);
 }
 
 function uniqueBy(list, key) {
@@ -92,6 +129,7 @@ async function connectAccount(name, server, username, password) {
   const profile = Store.upsertProfile(name || username, server, username, password);
   Store.activeProfileId = profile.id;
   M.userInfo = res.user_info;
+  M.snapshot = null; M._loadToken++;
   applyProfileSettings();
   await refreshRecordings();
   loadAll();
@@ -103,6 +141,7 @@ function activateProfile(id) {
   Store.activeProfileId = id;
   Xtream.configure(profile.baseUrl, profile.username, profile.password);
   M.userInfo = null;
+  M.snapshot = null; M._loadToken++;
   M.liveCategories = []; M.vodCategories = []; M.seriesCategories = [];
   M.liveStreams = []; M.vodStreams = []; M.seriesList = [];
   applyProfileSettings();
@@ -144,6 +183,7 @@ function toggleGroupHidden(type, id) {
   if (M.hiddenGroups.has(key)) M.hiddenGroups.delete(key); else M.hiddenGroups.add(key);
   Store.setHiddenGroups(M.hiddenGroups);
   emitChange('groups');
+  if (!M.hiddenGroups.has(key)) loadAll(); // now visible: fetched if it was never loaded
 }
 
 function setGroupsHidden(type, categories, hidden) {
@@ -153,6 +193,7 @@ function setGroupsHidden(type, categories, hidden) {
   });
   Store.setHiddenGroups(M.hiddenGroups);
   emitChange('groups');
+  if (!hidden) loadAll(); // fetch groups that are now visible but were never loaded
 }
 
 /** Visible groups of a type matching the search text. */

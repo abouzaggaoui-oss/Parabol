@@ -239,6 +239,26 @@ function resumeRecordingsOnStartup() {
 
 // ---------------- IPC handlers ----------------
 
+// ---------- Content kept on disk per account (shown at once on the next start) ----------
+
+function contentFile(profileId) {
+  return path.join(app.getPath('userData'), 'content', String(profileId).replace(/[^A-Za-z0-9_-]/g, '_') + '.json');
+}
+ipcMain.handle('content:load', (event, profileId) => {
+  try { return JSON.parse(fs.readFileSync(contentFile(profileId), 'utf-8')); } catch (e) { return null; }
+});
+ipcMain.handle('content:save', (event, profileId, data) => {
+  try {
+    const file = contentFile(profileId);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file + '.tmp', JSON.stringify(data));
+    fs.renameSync(file + '.tmp', file); // replace in one step, never half a file
+  } catch (e) { /* best effort */ }
+});
+ipcMain.handle('content:delete', (event, profileId) => {
+  try { fs.unlinkSync(contentFile(profileId)); } catch (e) { /* not there */ }
+});
+
 ipcMain.handle('recordings:getAll', () => publicRecordings());
 
 ipcMain.on('app:version', (event) => { event.returnValue = app.getVersion(); });

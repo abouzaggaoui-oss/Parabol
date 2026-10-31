@@ -20,7 +20,7 @@ SCREENS.settings = () => {
       h('div.grow', null,
         h('div', { text: 'Ingelogd als ' + (active ? active.username : '') }),
         exp ? h('div.hint', { text: 'Abonnement geldig tot ' + formatDate(exp) }) : null),
-      h('button.btn.btn-outline', { onclick: () => { loadAll(); toast('Lijsten worden vernieuwd…'); } }, 'Vernieuwen'))));
+      h('button.btn.btn-outline', { onclick: () => { loadAll(true); toast('Lijsten worden vernieuwd…'); } }, 'Vernieuwen'))));
 
     // ---- Accounts ----
     inner.appendChild(h('div.section-title', { text: 'Accounts' }));
@@ -71,6 +71,7 @@ SCREENS.settings = () => {
 
   function removeAccount(id) {
     Store.removeProfile(id);
+    if (window.parabolAPI && window.parabolAPI.deleteContent) window.parabolAPI.deleteContent(id);
     const next = Store.activeProfile();
     if (next) { activateProfile(next.id); openHome(); }
     else { LivePlayer.stop(); Router.root('login'); }

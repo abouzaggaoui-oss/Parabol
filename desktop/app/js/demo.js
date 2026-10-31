@@ -47,6 +47,9 @@ const DemoServer = (() => {
     return { epg_listings: list };
   }
 
+  const only = (params, list) => (params && params.category_id != null
+    ? list.filter((x) => String(x.category_id) === String(params.category_id)) : list);
+
   function respond(action, params, username, password) {
     switch (action) {
       case '': {
@@ -57,11 +60,11 @@ const DemoServer = (() => {
       case 'get_vod_categories': return [{ category_id: '11', category_name: 'Open films (Blender Foundation, CC BY)' }];
       case 'get_series_categories': return [{ category_id: '21', category_name: 'Demo-series' }];
       case 'get_live_streams':
-        return channels.map((c, i) => ({ num: i + 1, name: c.name, stream_id: c.id, category_id: '1', tv_archive: 0 }));
+        return only(params, channels.map((c, i) => ({ num: i + 1, name: c.name, stream_id: c.id, category_id: '1', tv_archive: 0 })));
       case 'get_vod_streams':
-        return films.map((f) => ({ name: f.title, stream_id: f.id, category_id: '11', container_extension: 'mp4' }));
+        return only(params, films.map((f) => ({ name: f.title, stream_id: f.id, category_id: '11', container_extension: 'mp4' })));
       case 'get_series':
-        return [{ name: 'Open films', series_id: 2001, category_id: '21', plot: 'De open films van de Blender Foundation als demo-serie (CC BY).' }];
+        return only(params, [{ name: 'Open films', series_id: 2001, category_id: '21', plot: 'De open films van de Blender Foundation als demo-serie (CC BY).' }]);
       case 'get_series_info':
         return {
           info: { name: 'Open films', plot: 'Demo-serie met de open films van de Blender Foundation (CC BY).' },
