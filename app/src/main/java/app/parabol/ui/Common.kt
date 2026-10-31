@@ -179,6 +179,7 @@ fun PanelHeader(
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 4.dp)
                     .focusRequester(fieldFocus)
+                    .tvTextField()
             )
             LaunchedEffect(Unit) { runCatching { fieldFocus.requestFocus() } }
         }

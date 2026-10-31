@@ -301,7 +301,9 @@ private fun AddAccountForm(vm: MainViewModel, onDone: () -> Unit) {
                 onValueChange = { name = it },
                 label = { Text(stringResource(R.string.account_name_label)) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Next),
+                keyboardActions = nextFieldActions(),
+                modifier = Modifier.fillMaxWidth().tvTextField()
             )
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
@@ -309,7 +311,9 @@ private fun AddAccountForm(vm: MainViewModel, onDone: () -> Unit) {
                 onValueChange = { server = it },
                 label = { Text(stringResource(R.string.login_server)) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Next),
+                keyboardActions = nextFieldActions(),
+                modifier = Modifier.fillMaxWidth().tvTextField()
             )
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
@@ -317,7 +321,9 @@ private fun AddAccountForm(vm: MainViewModel, onDone: () -> Unit) {
                 onValueChange = { username = it },
                 label = { Text(stringResource(R.string.login_username)) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Next),
+                keyboardActions = nextFieldActions(),
+                modifier = Modifier.fillMaxWidth().tvTextField()
             )
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
@@ -326,7 +332,9 @@ private fun AddAccountForm(vm: MainViewModel, onDone: () -> Unit) {
                 label = { Text(stringResource(R.string.login_password)) },
                 singleLine = true,
                 visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
+                keyboardActions = nextFieldActions(),
+                modifier = Modifier.fillMaxWidth().tvTextField()
             )
             if (vm.loginError) {
                 Spacer(Modifier.height(8.dp))

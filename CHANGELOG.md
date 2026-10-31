@@ -1,5 +1,10 @@
 # Wijzigingen (Android)
 
+## Nieuw in v2.5.3
+
+- **Tekstvelden met de afstandsbediening**: met omhoog en omlaag ga je naar het vorige of volgende veld (inloggen, account toevoegen, Groepen beheren en de zoekvelden). Op het schermtoetsenbord brengt *Volgende* je naar het volgende veld.
+- **Scherm wordt niet meer kleiner** als het toetsenbord op de tv verschijnt.
+
 ## Nieuw in v2.5.2
 
 - **Demo-account**: log in met server `demo`, gebruikersnaam `demo` en wachtwoord `demo` om Parabol te proberen zonder abonnement. Verzonnen zenders en tv-gids; de video's zijn de open films van de Blender Foundation (CC BY 3.0).

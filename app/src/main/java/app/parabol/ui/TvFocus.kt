@@ -23,6 +23,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalInputModeManager
@@ -116,4 +120,39 @@ fun rememberFirstItemFocus(ready: Boolean): FocusRequester {
 suspend fun FocusRequester.requestAfterLayout() {
     withFrameNanos { }
     runCatching { requestFocus() }
+}
+
+/**
+ * For text fields: with the remote, up/down leave the field for the previous/next control
+ * (a single-line field otherwise keeps the focus, so the next field can't be reached).
+ * Tab does the same on a keyboard. Left/right still move the cursor inside the text.
+ */
+@Composable
+fun Modifier.tvTextField(): Modifier {
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    return this.onPreviewKeyEvent { event ->
+        if (event.type != androidx.compose.ui.input.key.KeyEventType.KeyDown) return@onPreviewKeyEvent false
+        when (event.key) {
+            androidx.compose.ui.input.key.Key.DirectionDown ->
+                focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down)
+            androidx.compose.ui.input.key.Key.DirectionUp ->
+                focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Up)
+            androidx.compose.ui.input.key.Key.Tab ->
+                focusManager.moveFocus(
+                    if (event.isShiftPressed) androidx.compose.ui.focus.FocusDirection.Previous
+                    else androidx.compose.ui.focus.FocusDirection.Next
+                )
+            else -> false
+        }
+    }
+}
+
+/** On-screen keyboard: "Next" jumps to the next field, "Done" moves on to the button below. */
+@Composable
+fun nextFieldActions(): androidx.compose.foundation.text.KeyboardActions {
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    return androidx.compose.foundation.text.KeyboardActions(
+        onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down) },
+        onDone = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down) }
+    )
 }

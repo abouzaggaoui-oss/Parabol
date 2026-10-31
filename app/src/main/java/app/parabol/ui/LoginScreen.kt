@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -62,7 +63,10 @@ fun LoginScreen(vm: MainViewModel, onLoggedIn: () -> Unit, onBack: (() -> Unit)?
             label = { Text(stringResource(R.string.account_name_label)) },
             placeholder = { Text(stringResource(R.string.account_name_placeholder)) },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = nextFieldActions(),
             modifier = Modifier
+                .tvTextField()
                 .fillMaxWidth()
                 .widthIn(max = 480.dp)
         )
@@ -72,8 +76,10 @@ fun LoginScreen(vm: MainViewModel, onLoggedIn: () -> Unit, onBack: (() -> Unit)?
             onValueChange = { server = it },
             label = { Text(stringResource(R.string.login_server)) },
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
+            keyboardActions = nextFieldActions(),
             modifier = Modifier
+                .tvTextField()
                 .fillMaxWidth()
                 .widthIn(max = 480.dp)
         )
@@ -83,7 +89,10 @@ fun LoginScreen(vm: MainViewModel, onLoggedIn: () -> Unit, onBack: (() -> Unit)?
             onValueChange = { username = it },
             label = { Text(stringResource(R.string.login_username)) },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = nextFieldActions(),
             modifier = Modifier
+                .tvTextField()
                 .fillMaxWidth()
                 .widthIn(max = 480.dp)
         )
@@ -94,8 +103,10 @@ fun LoginScreen(vm: MainViewModel, onLoggedIn: () -> Unit, onBack: (() -> Unit)?
             label = { Text(stringResource(R.string.login_password)) },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+            keyboardActions = nextFieldActions(),
             modifier = Modifier
+                .tvTextField()
                 .fillMaxWidth()
                 .widthIn(max = 480.dp)
         )

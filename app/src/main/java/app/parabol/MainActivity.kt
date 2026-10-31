@@ -221,17 +221,21 @@ fun TvScale(content: @Composable () -> Unit) {
     if (!tv) { content(); return }
     if (TvUiSizeState.value == null) TvUiSizeState.value = app.parabol.data.Store(context).tvUiSize
     val canvasW = tvCanvasWidthDp(TvUiSizeState.value ?: "normal")
-    androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
-        val w = constraints.maxWidth.toFloat()
-        val hgt = constraints.maxHeight.toFloat()
-        val current = androidx.compose.ui.platform.LocalDensity.current
-        val target = if (w > 0 && hgt > 0) minOf(w / canvasW, hgt / (canvasW * 9f / 16f)) else current.density
-        val density = androidx.compose.ui.unit.Density(
-            density = target,
-            fontScale = current.fontScale.coerceAtMost(1.1f)
-        )
-        androidx.compose.runtime.CompositionLocalProvider(
-            androidx.compose.ui.platform.LocalDensity provides density
-        ) { content() }
+    // Scale from the whole screen, not the space left over: when the on-screen keyboard
+    // opens, the content area shrinks, and scaling from that made every menu smaller.
+    val config = androidx.compose.ui.platform.LocalConfiguration.current
+    val metrics = context.resources.displayMetrics
+    val current = androidx.compose.ui.platform.LocalDensity.current
+    val target = androidx.compose.runtime.remember(config, canvasW) {
+        val w = maxOf(metrics.widthPixels, metrics.heightPixels).toFloat()
+        val h = minOf(metrics.widthPixels, metrics.heightPixels).toFloat()
+        if (w > 0 && h > 0) minOf(w / canvasW, h / (canvasW * 9f / 16f)) else current.density
     }
+    val density = androidx.compose.ui.unit.Density(
+        density = target,
+        fontScale = current.fontScale.coerceAtMost(1.1f)
+    )
+    androidx.compose.runtime.CompositionLocalProvider(
+        androidx.compose.ui.platform.LocalDensity provides density
+    ) { content() }
 }

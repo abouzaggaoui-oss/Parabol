@@ -134,7 +134,9 @@ fun GroupsManagerScreen(vm: MainViewModel, onBack: () -> Unit) {
                                 onValueChange = { search = it },
                                 label = { Text(stringResource(R.string.search_groups)) },
                                 singleLine = true,
-                                modifier = Modifier.weight(1f)
+                                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
+                                keyboardActions = nextFieldActions(),
+                                modifier = Modifier.weight(1f).tvTextField()
                             )
                             Spacer(Modifier.width(8.dp))
                             TextButton(onClick = { vm.setAllGroupsHidden(type.key, filtered, false) }) {
