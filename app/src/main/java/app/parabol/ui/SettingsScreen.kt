@@ -270,6 +270,17 @@ fun SettingsScreen(vm: MainViewModel, onLogout: () -> Unit, onManageGroups: () -
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    val ok = app.parabol.ui.ParabolImages.loaded.get()
+                    val bad = app.parabol.ui.ParabolImages.failed.get()
+                    if (ok + bad > 0) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Afbeeldingen: $ok geladen, $bad mislukt" +
+                                if (bad > 0) " (laatste: ${app.parabol.ui.ParabolImages.lastFailure})" else "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     if (vm.contentReport.isNotBlank()) {
                         Spacer(Modifier.height(4.dp))
                         Text(

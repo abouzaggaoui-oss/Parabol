@@ -349,7 +349,8 @@ fun PosterCard(
             Artwork(
                 url = imageUrl,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                fallbackText = title
             )
             if (isFavorite) {
                 Icon(

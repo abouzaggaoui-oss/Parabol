@@ -1,5 +1,11 @@
 # Wijzigingen (Android)
 
+## Nieuw in v2.6.4
+
+- **Filmposters betrouwbaarder**: posters komen vaak van verschillende servers; sommige weigerden het verzoek of gaven bij veel tegelijk een foutmelding, waardoor een poster leeg bleef. Parabol stuurt nu een gewone browser-identificatie mee, probeert een mislukte poster tot drie keer, en bewaart posters op het toestel.
+- Lukt een poster toch niet, dan staat de titel van de film op de tegel in plaats van een leeg vak.
+- Onder **Instellingen › Over Parabol** staat hoeveel afbeeldingen geladen en mislukt zijn, met de laatste foutmelding.
+
 ## Nieuw in v2.6.3
 
 - **Tv-gids leesbaar**: veel aanbieders leveren dubbele of overlappende programma's aan, waardoor blokken en titels in de tv-gids over elkaar heen vielen. Parabol toont nu per tijdvak één programma: dubbele worden weggelaten en een overlappend programma begint waar het vorige eindigt.

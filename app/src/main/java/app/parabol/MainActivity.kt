@@ -67,6 +67,7 @@ class MainActivity : ComponentActivity() {
         ) {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
+        coil.Coil.setImageLoader { ParabolImages.create(this) }
         setContent {
             MaterialTheme(colorScheme = ParabolColors) {
                 Surface(modifier = Modifier.fillMaxSize(), color = NightBg) {

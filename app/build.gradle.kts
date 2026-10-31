@@ -12,8 +12,8 @@ android {
         applicationId = "app.parabol"
         minSdk = 23
         targetSdk = 36
-        versionCode = 26
-        versionName = "2.6.3"
+        versionCode = 27
+        versionName = "2.6.4"
     }
 
     // Release signing: one fixed key, supplied by CI via environment variables
