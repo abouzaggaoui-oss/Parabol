@@ -39,6 +39,9 @@ private data class CategoryLists(
 class ContentCache(private val dir: File) {
     private val gson = Gson()
 
+    /** Last read/write problem, shown under "About Parabol" to help diagnose. */
+    @Volatile var lastError: String? = null
+
     private fun file(profileId: String, part: String) =
         File(dir, "${profileId.replace(Regex("[^A-Za-z0-9_-]"), "_")}-$part.json")
 
@@ -46,32 +49,50 @@ class ContentCache(private val dir: File) {
         val f = file(profileId, part)
         if (!f.exists()) null
         else f.inputStream().buffered(BUFFER).reader().use { gson.fromJson<T>(it, type) }
-    }.getOrNull()
+    }.onFailure { lastError = "lezen $part: ${it.javaClass.simpleName} ${it.message.orEmpty().take(80)}" }.getOrNull()
 
-    private fun write(profileId: String, part: String, value: Any) {
-        runCatching {
-            dir.mkdirs()
-            val target = file(profileId, part)
-            val tmp = File(dir, target.name + ".tmp")
-            tmp.outputStream().buffered(BUFFER).writer().use { gson.toJson(value, it) }
-            if (!tmp.renameTo(target)) { target.delete(); tmp.renameTo(target) }
+    /** Returns true when the file was written. */
+    private fun write(profileId: String, part: String, value: Any): Boolean = runCatching {
+        dir.mkdirs()
+        val target = file(profileId, part)
+        val tmp = File(dir, target.name + ".tmp")
+        tmp.outputStream().buffered(BUFFER).writer().use { gson.toJson(value, it) }
+        if (!tmp.renameTo(target)) {
+            target.delete()
+            check(tmp.renameTo(target)) { "rename failed" }
         }
+        true
+    }.getOrElse {
+        lastError = "opslaan $part: ${it.javaClass.simpleName} ${it.message.orEmpty().take(80)}"
+        false
     }
 
     fun load(profileId: String): ContentSnapshot? {
+        val cats = loadGroups(profileId)
+        val live = loadLive(profileId)
+        val vod = loadVod(profileId)
+        val series = loadSeries(profileId)
+        if (cats == null && live == null && vod == null && series == null) return null
+        return ContentSnapshot(cats?.first, cats?.second, cats?.third, live, vod, series)
+    }
+
+    /** The group lists (live, vod, series); null when nothing is stored. */
+    fun loadGroups(profileId: String): Triple<List<Category>?, List<Category>?, List<Category>?>? {
         // Version 2.6.0 kept one big file per account (often never finished): remove it.
         val safe = profileId.replace(Regex("[^A-Za-z0-9_-]"), "_")
         runCatching { File(dir, "$safe.json").delete(); File(dir, "$safe.json.tmp").delete() }
-        val cats: CategoryLists? = read(profileId, "groups", CategoryLists::class.java)
-        val live: Map<String, List<LiveStream>>? =
-            read(profileId, "live", object : TypeToken<Map<String, List<LiveStream>>>() {}.type)
-        val vod: Map<String, List<VodStream>>? =
-            read(profileId, "vod", object : TypeToken<Map<String, List<VodStream>>>() {}.type)
-        val series: Map<String, List<SeriesStream>>? =
-            read(profileId, "series", object : TypeToken<Map<String, List<SeriesStream>>>() {}.type)
-        if (cats == null && live == null && vod == null && series == null) return null
-        return ContentSnapshot(cats?.live, cats?.vod, cats?.series, live, vod, series)
+        val c: CategoryLists = read(profileId, "groups", CategoryLists::class.java) ?: return null
+        return Triple(c.live, c.vod, c.series)
     }
+
+    fun loadLive(profileId: String): Map<String, List<LiveStream>>? =
+        read(profileId, "live", object : TypeToken<Map<String, List<LiveStream>>>() {}.type)
+
+    fun loadVod(profileId: String): Map<String, List<VodStream>>? =
+        read(profileId, "vod", object : TypeToken<Map<String, List<VodStream>>>() {}.type)
+
+    fun loadSeries(profileId: String): Map<String, List<SeriesStream>>? =
+        read(profileId, "series", object : TypeToken<Map<String, List<SeriesStream>>>() {}.type)
 
     fun saveGroups(profileId: String, live: List<Category>, vod: List<Category>, series: List<Category>) =
         write(profileId, "groups", CategoryLists(live, vod, series))
@@ -103,7 +124,13 @@ object ContentLoader {
     private const val PARALLEL = 6
 
     /** [changed]: something was fetched or dropped, so the stored copy needs saving. */
-    data class Outcome<T>(val groups: Map<String, List<T>>, val failed: Boolean, val changed: Boolean)
+    data class Outcome<T>(
+        val groups: Map<String, List<T>>,
+        val failed: Boolean,
+        val changed: Boolean,
+        /** What was downloaded: "" nothing, "all" everything, or the number of groups. */
+        val fetched: String = "",
+    )
 
     suspend fun <T> refresh(
         categories: List<Category>,
@@ -129,7 +156,7 @@ object ContentLoader {
             val result = kept.toMutableMap()
             known.forEach { id -> result[id] = grouped[id].orEmpty() }
             grouped.forEach { (id, items) -> if (id !in known) result[id] = items }
-            return Outcome(result, failed = false, changed = true)
+            return Outcome(result, failed = false, changed = true, fetched = "all")
         }
 
         val result = kept.toMutableMap()
@@ -145,7 +172,7 @@ object ContentLoader {
         } else if (firstItems.any { categoryOf(it) != first }) {
             val grouped = firstItems.groupBy { categoryOf(it) ?: "" }
             known.forEach { id -> result[id] = grouped[id].orEmpty() }
-            return Outcome(result, failed = false, changed = true)
+            return Outcome(result, failed = false, changed = true, fetched = "all")
         } else {
             result[first] = firstItems
             fetched = true
@@ -159,6 +186,6 @@ object ContentLoader {
             if (items == null) failed = true
             else { result[id] = items.filter { categoryOf(it) == id }; fetched = true }
         }
-        return Outcome(result, failed, changed = fetched || pruned)
+        return Outcome(result, failed, changed = fetched || pruned, fetched = needed.size.toString())
     }
 }

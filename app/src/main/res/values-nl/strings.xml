@@ -134,4 +134,5 @@
     <string name="settings_about">Over Parabol</string>
     <string name="settings_version">Versie %1$s</string>
     <string name="home_demo_notice">Demo-account: verzonnen zenders en tv-gids. Video\'s: open films van de Blender Foundation (CC BY 3.0), www.blender.org.</string>
+    <string name="home_reading_stored">Opgeslagen lijsten openen…</string>
 </resources>

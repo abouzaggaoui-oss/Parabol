@@ -270,6 +270,14 @@ fun SettingsScreen(vm: MainViewModel, onLogout: () -> Unit, onManageGroups: () -
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    if (vm.contentReport.isNotBlank()) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            vm.contentReport,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }

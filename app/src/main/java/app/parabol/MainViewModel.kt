@@ -29,6 +29,13 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val contentCache = ContentCache(java.io.File(app.filesDir, "content"))
     private var snapshot: ContentSnapshot? = null
     private var loadToken = 0
+
+    /** True while the stored lists are being read (Home shows that instead of "Loading content"). */
+    var readingStored by mutableStateOf(false); private set
+    /** What the last start did (read from the device, downloaded, saved), shown under "About Parabol". */
+    var contentReport by mutableStateOf(""); private set
+    private var reportStart = ""
+    private val reportSaves = java.util.concurrent.ConcurrentHashMap<String, String>()
     private val saveScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO)
     private val saveLock = kotlinx.coroutines.sync.Mutex()
 
@@ -178,16 +185,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             loading = false
             return
         }
+        // Stored lists appear (and missing ones load) right away; the login check runs
+        // alongside, it only provides the subscription details.
+        loadAll()
         viewModelScope.launch {
-            try {
-                val response = client.login(profile.username, profile.password)
-                userInfo = response.userInfo
-                contentError = false
-                loadAll()
-            } catch (e: Exception) {
-                contentError = true
-                loading = false
-            }
+            attempt { client.login(profile.username, profile.password) }?.let { userInfo = it.userInfo }
         }
     }
 
@@ -268,10 +270,32 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val token = ++loadToken
         loadAllJob = viewModelScope.launch {
             if (snapshot == null) {
-                // Reading a large stored list takes a moment: show "loading" meanwhile.
-                loading = true
-                snapshot = withContext(Dispatchers.IO) { contentCache.load(profile.id) }
-                snapshot?.let { applySnapshot(it) }
+                // Show what is stored on the device first, live TV before the (larger) movie list.
+                readingStored = true
+                val t0 = System.currentTimeMillis()
+                val id = profile.id
+                val cats = withContext(Dispatchers.IO) { contentCache.loadGroups(id) }
+                cats?.first?.takeIf { it.isNotEmpty() }?.let { liveCategories = it }
+                cats?.second?.takeIf { it.isNotEmpty() }?.let { vodCategories = it }
+                cats?.third?.takeIf { it.isNotEmpty() }?.let { seriesCategories = it }
+                val liveMap = withContext(Dispatchers.IO) { contentCache.loadLive(id) }
+                liveMap?.let { liveStreams = it.values.flatten() }
+                val (vodMap, seriesMap) = coroutineScope {
+                    val v = async(Dispatchers.IO) { contentCache.loadVod(id) }
+                    val s = async(Dispatchers.IO) { contentCache.loadSeries(id) }
+                    v.await()?.let { vodStreams = it.values.flatten() }
+                    s.await()?.let { seriesList = it.values.flatten() }
+                    v.await() to s.await()
+                }
+                snapshot = if (cats == null && liveMap == null && vodMap == null && seriesMap == null) null
+                    else ContentSnapshot(cats?.first, cats?.second, cats?.third, liveMap, vodMap, seriesMap)
+                readingStored = false
+                val sec = (System.currentTimeMillis() - t0) / 100 / 10.0
+                reportStart = snapshot?.let {
+                    "Van dit toestel gelezen in $sec s: ${liveStreams.size} zenders, ${vodStreams.size} films, ${seriesList.size} series."
+                } ?: "Niets opgeslagen op dit toestel (${contentCache.lastError ?: "eerste keer"})."
+                reportSaves.clear()
+                updateReport("")
             }
             val old = snapshot ?: ContentSnapshot()
             // Only show "loading" when there is nothing to show yet.
@@ -293,7 +317,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     liveCategories = liveCats; vodCategories = vodCats; seriesCategories = seriesCats
                     if (liveCats != old.liveCategories.orEmpty() || vodCats != old.vodCategories.orEmpty() ||
                         seriesCats != old.seriesCategories.orEmpty()
-                    ) persist(profile.id) { contentCache.saveGroups(it, liveCats, vodCats, seriesCats) }
+                    ) persist(profile.id, "groepen") { contentCache.saveGroups(it, liveCats, vodCats, seriesCats) }
 
                     // Each type is shown and saved as soon as it is done, without waiting for the others.
                     val live = async {
@@ -302,7 +326,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                             { id -> attempt { a.getLiveStreams(u, p, categoryId = id) } }
                         ).also { o ->
                             liveStreams = o.groups.values.flatten()
-                            if (o.changed) persist(profile.id) { contentCache.saveContent(it, "live", o.groups) }
+                            if (o.changed) persist(profile.id, "zenders") { contentCache.saveContent(it, "live", o.groups) }
                         }
                     }
                     val vod = async {
@@ -311,7 +335,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                             { id -> attempt { a.getVodStreams(u, p, categoryId = id) } }
                         ).also { o ->
                             vodStreams = o.groups.values.flatten()
-                            if (o.changed) persist(profile.id) { contentCache.saveContent(it, "vod", o.groups) }
+                            if (o.changed) persist(profile.id, "films") { contentCache.saveContent(it, "vod", o.groups) }
                         }
                     }
                     val series = async {
@@ -320,10 +344,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                             { id -> attempt { a.getSeries(u, p, categoryId = id) } }
                         ).also { o ->
                             seriesList = o.groups.values.flatten()
-                            if (o.changed) persist(profile.id) { contentCache.saveContent(it, "series", o.groups) }
+                            if (o.changed) persist(profile.id, "series") { contentCache.saveContent(it, "series", o.groups) }
                         }
                     }
                     val l = live.await(); val v = vod.await(); val s = series.await()
+                    fun what(o: ContentLoader.Outcome<*>) = when (o.fetched) {
+                        "" -> "niets"; "all" -> "alles"; else -> "${o.fetched} groepen"
+                    } + if (o.failed) " (mislukt)" else ""
+                    updateReport("Opgehaald: zenders ${what(l)}, films ${what(v)}, series ${what(s)}.")
                     val next = ContentSnapshot(liveCats, vodCats, seriesCats, l.groups, v.groups, s.groups)
                     snapshot = next
                     val nothingLoaded = lc.await() == null && vc.await() == null && sc.await() == null
@@ -340,8 +368,23 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      * and a newer load (or leaving the screen) doesn't cut a save off halfway.
      * Saves run one at a time.
      */
-    private fun persist(profileId: String, block: (String) -> Unit) {
-        saveScope.launch { saveLock.withLock { block(profileId) } }
+    private fun persist(profileId: String, part: String, block: (String) -> Boolean) {
+        saveScope.launch {
+            saveLock.withLock {
+                val t0 = System.currentTimeMillis()
+                val ok = block(profileId)
+                val sec = (System.currentTimeMillis() - t0) / 100 / 10.0
+                reportSaves[part] = if (ok) "$part opgeslagen ($sec s)" else "$part NIET opgeslagen: ${contentCache.lastError}"
+                kotlinx.coroutines.withContext(Dispatchers.Main) { updateReport(null) }
+            }
+        }
+    }
+
+    private var reportFetch = ""
+    private fun updateReport(fetch: String?) {
+        if (fetch != null) reportFetch = fetch
+        contentReport = listOf(reportStart, reportFetch, reportSaves.values.joinToString(", "))
+            .filter { it.isNotBlank() }.joinToString("\n")
     }
 
     private fun applySnapshot(s: ContentSnapshot) {

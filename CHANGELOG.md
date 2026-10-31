@@ -1,5 +1,11 @@
 # Wijzigingen (Android)
 
+## Nieuw in v2.6.2
+
+- **Opgeslagen lijsten meteen in beeld**: Parabol wachtte bij het openen van een account eerst op het inloggen bij de aanbieder en las pas daarna de opgeslagen lijsten. Nu staan ze er direct; inloggen gebeurt tegelijk op de achtergrond. Live tv komt eerst, daarna films en series.
+- Tijdens het openen staat er "Opgeslagen lijsten openen…" in plaats van "Content laden…".
+- **Instellingen › Over Parabol** laat zien wat er bij deze start gebeurde: wat van het toestel kwam, wat is opgehaald en of het opslaan lukte.
+
 ## Nieuw in v2.6.1
 
 - **Content wordt nu echt onthouden.** In 2.6.0 werd het bewaren pas gedaan nadat alles geladen was, en bij een grote aanbieder duurde dat op een tv lang. Werd de app in die tijd gesloten, dan was er niets bewaard en laadde de volgende start alles opnieuw. Nu bewaart Parabol live tv, films en series elk apart, op de achtergrond.

@@ -307,7 +307,7 @@ private fun HomeStatus(vm: MainViewModel) {
                 CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    stringResource(R.string.home_loading),
+                    stringResource(if (vm.readingStored) R.string.home_reading_stored else R.string.home_loading),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
