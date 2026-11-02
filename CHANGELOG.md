@@ -1,5 +1,9 @@
 # Wijzigingen (Android)
 
+## Nieuw in v2.7.1
+
+- Vereist nu Android 7.0 of nieuwer (was 6.0), zodat Google Play de app automatisch kan beveiligen.
+
 ## Nieuw in v2.7.0
 
 - **M3U-afspeellijsten**: naast Xtream kun je bij een account nu ook de link van een M3U-afspeellijst plakken. Zenders, films en series uit de lijst komen in dezelfde schermen, met groepen zoals in de lijst. Staat er een tv-gids (XMLTV, ook .gz) in de lijst, of vul je die link zelf in, dan zie je ook de tv-gids.

@@ -10,10 +10,10 @@ android {
 
     defaultConfig {
         applicationId = "app.parabol"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 36
-        versionCode = 28
-        versionName = "2.7.0"
+        versionCode = 29
+        versionName = "2.7.1"
     }
 
     // Release signing: one fixed key, supplied by CI via environment variables
