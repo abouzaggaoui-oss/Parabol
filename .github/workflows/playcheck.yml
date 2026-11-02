@@ -70,7 +70,7 @@ jobs:
             echo "== badging"
             $BT/aapt2 dump badging "$APK" | grep -E "^package|targetSdk|sdkVersion|leanback|uses-feature|uses-permission" || true
             echo "== signature"
-            keytool -printcert -jarfile "$APK" | grep SHA256
+            $BT/apksigner verify --print-certs "$APK" | grep -i "SHA-256" || true
             ls -la app/build/outputs/bundle/release/
           } > report/report.txt 2>&1
           cat report/report.txt
