@@ -17,32 +17,6 @@ data class Profile(
     val isM3u get() = kind == "m3u"
 }
 
-/** A recording the user has scheduled for a future (or currently airing) programme. */
-data class ScheduledRecording(
-    val id: String,
-    val profileId: String,
-    val streamId: Int,
-    val channelName: String,
-    val programTitle: String,
-    val startEpochSeconds: Long,
-    val endEpochSeconds: Long,
-    /** Full stream link to record (M3U accounts); null = built from the Xtream server. */
-    val streamUrl: String? = null
-) {
-    val durationMinutes: Int
-        get() = ((endEpochSeconds - startEpochSeconds) / 60).toInt().coerceAtLeast(1)
-}
-
-/** A finished recording, saved to the device's Movies/Parabol folder via MediaStore. */
-data class CompletedRecording(
-    val id: String,
-    val profileId: String,
-    val channelName: String,
-    val programTitle: String,
-    val contentUri: String,
-    val recordedAtEpochSeconds: Long
-)
-
 /** Current + upcoming programmes for one channel, with the time they were fetched. */
 data class ShortEpg(val listings: List<EpgListing>, val fetchedAt: Long)
 

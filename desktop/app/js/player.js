@@ -1,7 +1,7 @@
 /* Parabol Desktop — video playback.
  *  LivePlayer: one <video> for Live TV that sits over the preview slot (split view) or fills
  *              the window (full screen), so switching between the two never restarts the stream.
- *  VodPlayer:  full-window player for movies, episodes, catch-up and recordings (seek bar,
+ *  VodPlayer:  full-window player for movies, episodes and catch-up (seek bar,
  *              subtitles, audio track, resume position, previous/next episode). */
 
 /** Attaches a URL to a <video>: HLS via hls.js, MPEG-TS via mpegts.js, anything else natively. */

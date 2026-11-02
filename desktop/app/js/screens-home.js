@@ -97,7 +97,6 @@ SCREENS.home = () => {
         title: 'Account wisselen of toevoegen',
       },
         icon('person'), h('span.ellipsis', { text: profile.name })) : null,
-      iconButton('record', 'Opnames', () => Router.go('recordings')),
       iconButton('settings', 'Instellingen', () => Router.go('settings'))
     ));
     el.appendChild(h('div.tiles', null,

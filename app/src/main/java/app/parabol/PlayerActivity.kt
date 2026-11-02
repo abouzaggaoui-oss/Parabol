@@ -30,7 +30,7 @@ import androidx.media3.ui.PlayerView
 import app.parabol.player.PlayerFactory
 
 /**
- * Full-screen player for movies, series episodes, catch-up programmes and recordings:
+ * Full-screen player for movies, series episodes and catch-up programmes:
  * seek bar, title bar with subtitle upload, resume-where-you-left-off, and episodes queued
  * as a playlist. Live TV is played inside the Live TV screen instead.
  */

@@ -1,5 +1,9 @@
 # Wijzigingen (Android)
 
+## Nieuw in v2.8.0
+
+- **Opnemen is verwijderd**, ook uit de desktopversie, zodat beide gelijk blijven. Daarmee vraagt Parabol ook geen toestemming meer voor meldingen en draait er niets meer op de achtergrond. Opnames die al gemaakt zijn, blijven in de map Films/Parabol staan.
+
 ## Nieuw in v2.7.1
 
 - Vereist nu Android 7.0 of nieuwer (was 6.0), zodat Google Play de app automatisch kan beveiligen.

@@ -202,12 +202,7 @@ fun EpgScreen(vm: MainViewModel, streamId: Int) {
                         val start = item.startSeconds(offset)
                         val stop = item.stopSeconds(offset)
                         val isNow = start <= nowSeconds && stop >= nowSeconds
-                        val isFuture = start > nowSeconds
                         val isPast = stop < nowSeconds
-
-                        val alreadyScheduled = vm.scheduledRecordings.any {
-                            it.streamId == streamId && it.startEpochSeconds in start until maxOf(stop, start + 1)
-                        }
 
                         val catchupAvailable = isPast && channel != null && channel.hasCatchup &&
                                 (nowSeconds - start) <= channel.catchupDurationDays.toLong() * 86400
@@ -248,30 +243,6 @@ fun EpgScreen(vm: MainViewModel, streamId: Int) {
                                         maxLines = 3,
                                         overflow = TextOverflow.Ellipsis
                                     )
-                                }
-
-                                if ((isFuture || isNow) && channel != null) {
-                                    Spacer(Modifier.height(8.dp))
-                                    if (alreadyScheduled) {
-                                        OutlinedButton(onClick = {
-                                            vm.scheduledRecordings.firstOrNull {
-                                                it.streamId == streamId && it.startEpochSeconds in start until maxOf(stop, start + 1)
-                                            }?.let { vm.cancelScheduledRecording(it) }
-                                        }) {
-                                            Text(stringResource(R.string.recording_scheduled_cancel))
-                                        }
-                                    } else {
-                                        Button(onClick = {
-                                            vm.scheduleRecording(channel, item.title, start, stop)
-                                        }) {
-                                            Text(
-                                                stringResource(
-                                                    if (isNow) R.string.recording_now
-                                                    else R.string.recording_schedule
-                                                )
-                                            )
-                                        }
-                                    }
                                 }
 
                                 if (catchupAvailable && channel != null) {

@@ -13,8 +13,6 @@ const M = {
   epgOffset: 0,
   loading: false,
   loadError: false,
-  scheduledRecordings: [],
-  completedRecordings: [],
   epgCache: new Map(), // streamId -> { listings, fetchedAt }
   lastLiveGroupId: null,
   listeners: new Set(),
@@ -22,7 +20,7 @@ const M = {
   snapshot: null, // content of the active account as kept on disk
 };
 
-/** Screens subscribe to re-render when data changes (favorites, groups, EPG, recordings…). */
+/** Screens subscribe to re-render when data changes (favorites, groups, EPG…). */
 function onModelChange(fn) { M.listeners.add(fn); return () => M.listeners.delete(fn); }
 function emitChange(what) { M.listeners.forEach((fn) => { try { fn(what); } catch (e) { console.error(e); } }); }
 
@@ -144,7 +142,6 @@ async function connectAccount(name, server, username, password) {
   M.userInfo = res.user_info;
   M.snapshot = null; M._loadToken++;
   applyProfileSettings();
-  await refreshRecordings();
   loadAll();
 }
 
@@ -168,7 +165,6 @@ async function connectM3u(name, playlistUrl, guideUrl) {
   M.userInfo = res.user_info;
   M.snapshot = null; M._loadToken++;
   applyProfileSettings();
-  await refreshRecordings();
   loadAll();
 }
 
@@ -182,7 +178,6 @@ function activateProfile(id) {
   M.liveCategories = []; M.vodCategories = []; M.seriesCategories = [];
   M.liveStreams = []; M.vodStreams = []; M.seriesList = [];
   applyProfileSettings();
-  refreshRecordings();
   loadAll();
   return true;
 }
@@ -360,42 +355,3 @@ function nowAndNext(streamId, now) {
 }
 
 
-// ---------- Recordings (run in the main process) ----------
-
-async function refreshRecordings() {
-  if (!window.parabolAPI) return;
-  try {
-    const data = await window.parabolAPI.getRecordings();
-    applyRecordings(data);
-  } catch (e) { /* ignore */ }
-}
-
-function applyRecordings(data) {
-  const id = Store.activeProfileId;
-  M.scheduledRecordings = arr(data && data.scheduled).filter((r) => r.profileId === id);
-  M.completedRecordings = arr(data && data.completed).filter((r) => r.profileId === id);
-  emitChange('recordings');
-}
-
-function scheduleRecording(channel, title, start, stop) {
-  const profile = Store.activeProfile();
-  if (!profile || !window.parabolAPI) return;
-  window.parabolAPI.scheduleRecording({
-    id: 'rec_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-    profileId: profile.id,
-    streamId: channel.stream_id,
-    channelName: channel.name,
-    programTitle: title,
-    startEpochSeconds: start,
-    endEpochSeconds: stop,
-    url: Xtream.rawTsUrl(channel.stream_id),
-  }).then(refreshRecordings);
-}
-
-function cancelRecording(id) {
-  if (window.parabolAPI) window.parabolAPI.cancelRecording(id).then(refreshRecordings);
-}
-
-function deleteCompletedRecording(id) {
-  if (window.parabolAPI) window.parabolAPI.deleteCompletedRecording(id).then(refreshRecordings);
-}

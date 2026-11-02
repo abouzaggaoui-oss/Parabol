@@ -83,12 +83,6 @@ const Xtream = {
     if (this.isM3u) return this.directLink(M.liveStreams, 'stream_id', streamId);
     return `${this.base}/live/${this.username}/${this.password}/${streamId}.${ext}`;
   },
-  /** Raw MPEG-TS URL, used specifically for recording (simple byte-copy download). */
-  rawTsUrl(streamId) {
-    if (this.isDemo) return DemoServer.liveUrl(streamId); // an mp4 file: recorded whole
-    if (this.isM3u) return this.directLink(M.liveStreams, 'stream_id', streamId);
-    return `${this.base}/live/${this.username}/${this.password}/${streamId}.ts`;
-  },
   movieUrl(streamId, ext) {
     if (this.isDemo) return DemoServer.movieUrl(streamId);
     if (this.isM3u) return this.directLink(M.vodStreams, 'stream_id', streamId);

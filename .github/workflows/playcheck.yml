@@ -68,7 +68,7 @@ jobs:
               print(so[2:], sorted(aligns), 'OK' if min(aligns) >= 16384 else 'TOO SMALL')
           PY
             echo "== badging"
-            $BT/aapt2 dump badging "$APK" | grep -E "^package|targetSdk|sdkVersion|leanback|uses-feature" || true
+            $BT/aapt2 dump badging "$APK" | grep -E "^package|targetSdk|sdkVersion|leanback|uses-feature|uses-permission" || true
             echo "== signature"
             keytool -printcert -jarfile "$APK" | grep SHA256
             ls -la app/build/outputs/bundle/release/

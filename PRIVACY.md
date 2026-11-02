@@ -1,6 +1,6 @@
 # Privacyverklaring Parabol
 
-*Laatst bijgewerkt: 23 oktober 2026*
+*Laatst bijgewerkt: 2 november 2026*
 
 Parabol is een mediaspeler voor Android, Google TV, Windows en macOS. Deze verklaring beschrijft welke gegevens de app gebruikt.
 
@@ -14,9 +14,8 @@ Parabol is een mediaspeler voor Android, Google TV, Windows en macOS. Deze verkl
 
 - **Accountgegevens** die je zelf invult (accountnaam, server-URL, gebruikersnaam en wachtwoord). Die worden op je apparaat opgeslagen. Je gebruikersnaam en wachtwoord worden alleen verstuurd naar de server van de aanbieder die je zelf hebt opgegeven, om daar in te loggen. Of dat versleuteld gebeurt, hangt af van die server (http of https).
 - **Voorkeuren**: favorieten, verborgen groepen, waar je gebleven was in een film of aflevering, en instellingen.
-- **Opnames** die je zelf maakt, in de map Films/Parabol (Android, macOS) of Video's/Parabol (Windows).
 
-Verwijder je een account of de app, dan worden deze gegevens van je apparaat verwijderd (opnames in de map Films blijven staan tot je ze zelf verwijdert).
+Verwijder je een account of de app, dan worden deze gegevens van je apparaat verwijderd.
 
 ## Verbindingen
 
@@ -30,8 +29,6 @@ Wat die partijen met je gegevens doen, valt onder hun eigen privacybeleid.
 ## Toestemmingen (Android)
 
 - **Internet en netwerkstatus**: om te verbinden met je aanbieder.
-- **Meldingen**: om te laten zien dat een opname loopt of klaar is.
-- **Voorgrondservice en wakker houden**: zodat een opname doorloopt als het scherm uit is.
 
 ## Kinderen
 

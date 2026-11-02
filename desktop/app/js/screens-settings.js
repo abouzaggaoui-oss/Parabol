@@ -34,7 +34,7 @@ SCREENS.settings = () => {
           : h('button.btn.btn-outline', { onclick: () => { activateProfile(p.id); openHome(); } }, 'Wissel naar dit account'),
         h('button.btn.btn-text', {
           onclick: () => confirmDialog(`${p.name} verwijderen?`,
-            'Hiermee verwijder je ook de favorieten, verborgen groepen en geplande opnames van dit account. Voltooide opnames blijven op je computer staan.',
+            'Hiermee verwijder je ook de favorieten en verborgen groepen van dit account.',
             'Verwijderen', () => removeAccount(p.id)),
         }, 'Verwijderen'))));
     });
@@ -58,12 +58,6 @@ SCREENS.settings = () => {
     inner.appendChild(h('div.card', null,
       h('div.hint', { style: { marginBottom: '10px' }, text: 'Maak gratis een API-key aan op opensubtitles.com/consumers en plak hem hier. Nodig om in de speler ondertiteling te zoeken.' }),
       key));
-
-    // ---- Recordings ----
-    inner.appendChild(h('div.section-title', { text: 'Opnames' }));
-    inner.appendChild(h('div.card', null, h('div.card-row', null,
-      h('div.grow.hint', { text: 'Opnames staan in de map Parabol in je Films-/Video\'s-map. Sluit je het venster, dan blijft Parabol actief zodat opnames doorlopen.' }),
-      h('button.btn.btn-outline', { onclick: () => window.parabolAPI && window.parabolAPI.openRecordingsFolder() }, icon('folder'), 'Map openen'))));
 
     inner.appendChild(h('div.hint', { style: { marginTop: '28px', textAlign: 'center' }, text: 'Parabol Desktop ' + (window.parabolAPI && window.parabolAPI.version ? window.parabolAPI.version : '') }));
     body.scrollTop = scroll;

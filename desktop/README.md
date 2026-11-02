@@ -2,6 +2,11 @@
 
 De desktopversie van Parabol, gebouwd met Electron. Parabol bevat geen content: je speelt af van je eigen aanbieder (Xtream Codes API of een M3U-afspeellijst). Vanaf **v2.2.0** heeft hij dezelfde opzet en functies als de Android-app v2.2.0.
 
+## Nieuw in v2.8.0
+
+- **Opnemen is verwijderd**, op de computer en in de Android-app, zodat beide versies gelijk blijven. Opnames die al gemaakt zijn, blijven in de map Films/Parabol (Video's/Parabol op Windows) staan.
+- Op Windows sluit Parabol nu gewoon af als je het venster sluit; er staat geen icoon meer in het systeemvak.
+
 ## Nieuw in v2.7.0
 
 - **M3U-afspeellijsten**: naast Xtream kun je bij een account nu ook de link van een M3U-afspeellijst plakken. Zenders, films en series uit de lijst komen in dezelfde schermen, met groepen zoals in de lijst. Staat er een tv-gids (XMLTV, ook .gz) in de lijst, of vul je die link zelf in, dan zie je ook de tv-gids.
@@ -65,16 +70,15 @@ De bestanden worden automatisch gebouwd door de workflow *Desktop (macOS + Windo
 
 ## Wat erin zit (v2.2.0)
 
-- **Home** met drie tegels: Live tv, Films en Series; opnames, instellingen en je account rechtsboven.
+- **Home** met drie tegels: Live tv, Films en Series; instellingen en je account rechtsboven.
 - **Live tv**: groepen links (zoeken, Favorieten bovenaan), zenders met een **tijdlijn van de tv-gids**, en een gedeeld scherm met de zender die speelt, het programma en wat er hierna komt.
   - Een zender kiezen opent hem **volledig scherm**. **Esc** gaat terug naar het gedeelde scherm, nog een keer Esc stopt het kijken, nog een keer gaat naar Home.
   - Volledig scherm: **↑ ↓** of Page Up/Down = zappen, **Enter** of klikken = 3 seconden de zender en het programma.
   - Favoriet maken: **rechtsklik** op een zender of poster, of de ster.
   - Speelt een zender niet als HLS, dan probeert Parabol automatisch MPEG-TS.
 - **Films en Series**: groepen links, posters rechts met zoeken; series met seizoenen en afleveringen. Films en afleveringen gaan **verder waar je was gebleven**.
-- **Speler** voor films, series, terugkijken en opnames: afspeelbalk, ondertiteling laden (.srt/.vtt) of zoeken via OpenSubtitles, audiospoor kiezen, vorige/volgende aflevering.
-- **Tv-gids** per zender met **opnemen** (ook "nu opnemen") en **terugkijken** bij zenders die dat ondersteunen.
-- **Opnames** in *Films/Parabol* (Mac) of *Video's/Parabol* (Windows), af te spelen in de app. Sluit je het venster, dan blijft Parabol actief (menubalk / systeemvak) zodat opnames doorlopen; afsluiten met Cmd+Q of via het icoon › Afsluiten.
+- **Speler** voor films, series en terugkijken: afspeelbalk, ondertiteling laden (.srt/.vtt) of zoeken via OpenSubtitles, audiospoor kiezen, vorige/volgende aflevering.
+- **Tv-gids** per zender met **terugkijken** bij zenders die dat ondersteunen.
 - **Instellingen**: meerdere accounts, OpenSubtitles-key en **Groepen beheren**: per land in één keer aan of uit, of per groep.
 - Op de Mac de gewone menubalk (Cmd+Q, kopiëren/plakken, volledig scherm).
 

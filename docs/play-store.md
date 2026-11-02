@@ -19,7 +19,7 @@ Functies
 • Films en series met seizoenen en afleveringen, en verder kijken waar je was
 • Favorieten
 • Groepen kiezen per land of per groep
-• Opnemen en terugkijken, als je aanbieder dat ondersteunt
+• Terugkijken, als je aanbieder dat ondersteunt
 • Meerdere accounts, Xtream of M3U-afspeellijst (met XMLTV-tv-gids)
 • Audiospoor en ondertiteling kiezen, ook eigen .srt-bestanden
 • Gemaakt voor de afstandsbediening van Google TV én voor touch
@@ -39,7 +39,7 @@ Features
 • Movies and series with seasons and episodes, resume where you left off
 • Favorites
 • Choose groups per country or per group
-• Recording and catch-up, if your provider supports it
+• Catch-up, if your provider supports it
 • Multiple accounts, Xtream or M3U playlist (with XMLTV guide)
 • Choose audio and subtitle tracks, including your own .srt files
 • Built for the Google TV remote and for touch
@@ -70,7 +70,7 @@ Nee.
 ## Toegang voor de beoordelaar (App access)
 Gebruik het ingebouwde demo-account; daarvoor is geen abonnement nodig.
 - Gebruikersnaam: `demo` · Wachtwoord: `demo`
-- Andere informatie: "Open Parabol, kies Account toevoegen, vul als naam Demo in, als server-URL demo, als gebruikersnaam demo en als wachtwoord demo, en kies Verbinden. Het demo-account toont verzonnen zenders en een tv-gids; de video's zijn de open films van de Blender Foundation (CC BY 3.0). Alle functies (live tv, tv-gids, films, series, opnemen, favorieten) zijn ermee te testen."
+- Andere informatie: "Open Parabol, kies Account toevoegen, vul als naam Demo in, als server-URL demo, als gebruikersnaam demo en als wachtwoord demo, en kies Verbinden. Het demo-account toont verzonnen zenders en een tv-gids; de video's zijn de open films van de Blender Foundation (CC BY 3.0). Alle functies (live tv, tv-gids, films, series, favorieten) zijn ermee te testen."
 
 ## Afbeeldingen (map `docs/play-store/`)
 

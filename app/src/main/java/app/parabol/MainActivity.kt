@@ -1,11 +1,7 @@
 package app.parabol
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -49,9 +45,6 @@ internal val ParabolColors = darkColorScheme(
 )
 
 class MainActivity : ComponentActivity() {
-    private val notificationPermission =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* optional */ }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         // Android 15+ draws apps edge-to-edge; the content is padded by the system bars below.
         enableEdgeToEdge(
@@ -59,14 +52,6 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
         )
         super.onCreate(savedInstanceState)
-        // Android 13+: without this runtime permission the recording progress/finished
-        // notifications are silently hidden. Recording itself still works if denied.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
         coil.Coil.setImageLoader { ParabolImages.create(this) }
         setContent {
             MaterialTheme(colorScheme = ParabolColors) {
@@ -153,12 +138,6 @@ fun ParabolApp(vm: MainViewModel = viewModel()) {
             val id = backStack.arguments?.getString("streamId")?.toIntOrNull() ?: return@composable
             EpgScreen(vm = vm, streamId = id)
         }
-        composable("recordings") {
-            ScreenScaffold(
-                title = stringResource(R.string.tab_recordings),
-                onBack = { nav.popBackStack() }
-            ) { RecordingsScreen(vm) }
-        }
         composable("settings") {
             ScreenScaffold(
                 title = stringResource(R.string.tab_settings),
@@ -177,7 +156,7 @@ fun ParabolApp(vm: MainViewModel = viewModel()) {
     }
 }
 
-/** Plays a single item (movie, catch-up programme or recording) full screen. */
+/** Plays a single item (movie or catch-up programme) full screen. */
 fun playSingle(context: android.content.Context, url: String, title: String) {
     playQueue(context, listOf(PlayerQueue.Item(url, title)), 0)
 }

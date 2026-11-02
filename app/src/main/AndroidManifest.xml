@@ -4,11 +4,6 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- Google TV / Android TV support -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -43,15 +38,6 @@
             android:supportsPictureInPicture="true"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation|smallestScreenSize|screenLayout" />
 
-        <!--
-            Required on Android 14+ (targetSdk 34): WorkManager's foreground service must
-            declare the type RecordingWorker uses. Without this, setForeground() throws and
-            every recording fails the moment it starts.
-        -->
-        <service
-            android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="dataSync"
-            tools:node="merge" />
 
     </application>
 </manifest>

@@ -1,6 +1,6 @@
 /* Parabol Desktop — persistent local storage: accounts (profiles), per-profile
- * favorites/hidden groups. Recordings live in the main process (see main.js),
- * not here, since they must keep running even while the window is hidden. */
+ * favorites/hidden groups. The (large) channel and movie lists are kept on disk by the
+ * main process (see main.js). */
 
 const Store = {
   _migrateLegacyIfNeeded() {

@@ -17,7 +17,7 @@
 ## Functies
 
 - Live tv met groepen en tv-gids, films en series
-- Opnemen, terugkijken (als je aanbieder het ondersteunt) en verder kijken
+- Terugkijken (als je aanbieder het ondersteunt) en verder kijken
 - Favorieten, meerdere accounts (Xtream of M3U met XMLTV-gids), groepen kiezen per land
 - Audio- en ondertitelsporen kiezen, eigen .srt-bestanden
 - Bediening met afstandsbediening, toetsenbord en touch; Nederlands en Engels

@@ -80,10 +80,6 @@ function init() {
   LivePlayer.init();
   VodPlayer.init();
 
-  if (window.parabolAPI) {
-    window.parabolAPI.onRecordingsChanged((data) => applyRecordings(data));
-  }
-
   // Always start on the account screen (the login form when there is no account yet).
   Router.root(Store.getProfiles().length ? 'accounts' : 'login');
 }

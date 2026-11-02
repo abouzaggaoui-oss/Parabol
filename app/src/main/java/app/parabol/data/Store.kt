@@ -8,7 +8,7 @@ import java.util.UUID
 
 /**
  * Persistent storage: accounts (profiles), per-profile favorites/hidden groups,
- * stream format, and recordings (scheduled + completed).
+ * and stream format.
  *
  * Favorite keys:   "live:<streamId>", "vod:<streamId>", "series:<seriesId>"
  * Hidden keys:     "live:<categoryId>", "vod:<categoryId>", "series:<categoryId>"
@@ -59,7 +59,7 @@ class Store(context: Context) {
     /**
      * Adds an account, or updates the existing one when the same server + username is
      * entered again (e.g. after a password change). Keeps its id, so its favorites,
-     * hidden groups and recordings stay attached to it.
+     * and hidden groups stay attached to it.
      */
     fun upsertProfile(
         name: String, baseUrl: String, username: String, password: String,
@@ -188,49 +188,4 @@ class Store(context: Context) {
         prefs.edit().putStringSet("hiddenGroups_$id", value).apply()
     }
 
-    // ---- Recordings (scheduled + completed) ----
-
-    fun getScheduledRecordings(): List<ScheduledRecording> {
-        val json = prefs.getString("scheduledRecordings", null) ?: return emptyList()
-        return try {
-            val type = object : TypeToken<List<ScheduledRecording>>() {}.type
-            gson.fromJson(json, type) ?: emptyList()
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
-    fun setScheduledRecordings(value: List<ScheduledRecording>) {
-        prefs.edit().putString("scheduledRecordings", gson.toJson(value)).apply()
-    }
-
-    fun addScheduledRecording(recording: ScheduledRecording) {
-        setScheduledRecordings(getScheduledRecordings() + recording)
-    }
-
-    fun removeScheduledRecording(id: String) {
-        setScheduledRecordings(getScheduledRecordings().filter { it.id != id })
-    }
-
-    fun getCompletedRecordings(): List<CompletedRecording> {
-        val json = prefs.getString("completedRecordings", null) ?: return emptyList()
-        return try {
-            val type = object : TypeToken<List<CompletedRecording>>() {}.type
-            gson.fromJson(json, type) ?: emptyList()
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
-    fun setCompletedRecordings(value: List<CompletedRecording>) {
-        prefs.edit().putString("completedRecordings", gson.toJson(value)).apply()
-    }
-
-    fun addCompletedRecording(recording: CompletedRecording) {
-        setCompletedRecordings(getCompletedRecordings() + recording)
-    }
-
-    fun removeCompletedRecording(id: String) {
-        setCompletedRecordings(getCompletedRecordings().filter { it.id != id })
-    }
 }

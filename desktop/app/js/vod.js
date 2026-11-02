@@ -1,4 +1,4 @@
-/* Parabol Desktop — player for movies, episodes, catch-up and recordings.
+/* Parabol Desktop — player for movies, episodes and catch-up.
  *
  * Each item is first examined with ffmpeg (container, codecs, audio tracks, length). What
  * Chromium can play itself (MP4 with H.264/AAC, HLS, MPEG-TS with H.264/AAC) plays directly

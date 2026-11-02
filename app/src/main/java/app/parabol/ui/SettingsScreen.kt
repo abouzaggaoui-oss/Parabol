@@ -37,7 +37,7 @@ fun SettingsScreen(vm: MainViewModel, onLogout: () -> Unit, onManageGroups: () -
     var profilePendingRemoval by remember { mutableStateOf<app.parabol.data.Profile?>(null) }
 
     // Removing an account also deletes its favorites, hidden groups and scheduled
-    // recordings, so ask first instead of doing it on a single (mis)tap.
+    // groups, so ask first instead of doing it on a single (mis)tap.
     profilePendingRemoval?.let { profile ->
         AlertDialog(
             onDismissRequest = { profilePendingRemoval = null },

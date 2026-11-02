@@ -81,8 +81,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     var profiles by mutableStateOf<List<Profile>>(emptyList()); private set
     var activeProfile by mutableStateOf<Profile?>(null); private set
 
-    var scheduledRecordings by mutableStateOf<List<ScheduledRecording>>(emptyList()); private set
-    var completedRecordings by mutableStateOf<List<CompletedRecording>>(emptyList()); private set
 
     // Running jobs, so a newer request can cancel an older one instead of being
     // overwritten by its (late) result, e.g. when switching accounts or channels quickly.
@@ -90,33 +88,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private var epgJob: Job? = null
     private var seriesInfoJob: Job? = null
 
-    // RecordingWorker writes to the same SharedPreferences from the background.
-    // Listening here keeps the Recordings tab up to date without reopening the app.
-    private val recordingsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-        if (key == "scheduledRecordings" || key == "completedRecordings") refreshRecordings()
-    }
-
     init {
-        store.registerListener(recordingsListener)
         refreshProfiles()
-        refreshRecordings()
         // The app always starts on the account screen; the chosen account is opened from there.
-    }
-
-    override fun onCleared() {
-        store.unregisterListener(recordingsListener)
-        super.onCleared()
     }
 
     private fun refreshProfiles() {
         profiles = store.getProfiles()
         activeProfile = store.activeProfile()
-    }
-
-    private fun refreshRecordings() {
-        val id = store.activeProfileId
-        scheduledRecordings = store.getScheduledRecordings().filter { it.profileId == id }
-        completedRecordings = store.getCompletedRecordings().filter { it.profileId == id }
     }
 
     // ---- Connection & accounts ----
@@ -147,7 +126,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     contentError = false
                     isLoggedIn = true
                     refreshProfiles()
-                    refreshRecordings()
                     loadAll()
                     loginSuccessTick++
                 } else {
@@ -182,7 +160,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     contentError = false
                     isLoggedIn = true
                     refreshProfiles()
-                    refreshRecordings()
                     loadAll()
                     loginSuccessTick++
                 } else {
@@ -204,12 +181,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         loading = true
         loginError = false
         if (switchingAccount) clearContent() // never show account A's lists under account B
-        // Favorites/groups/recordings are local, so show them even if the server is unreachable.
+        // Favorites and groups are local, so show them even if the server is unreachable.
         favorites = store.getFavorites()
         hiddenGroups = store.getHiddenGroups()
         epgOffsetHours = 0 // the guide time correction setting was removed
         refreshProfiles()
-        refreshRecordings()
         // Keep a client even if login fails, so "retry" and playback URLs still work.
         // create() throws on a malformed URL, so guard it rather than crash at startup.
         val client = runCatching { XtreamApi.forProfile(profile) }.getOrNull()
@@ -261,11 +237,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Removes an account. If it was the active one, switches to another if available. */
     fun removeProfile(id: String) {
-        // Don't leave background recordings running for an account that no longer exists.
-        store.getScheduledRecordings().filter { it.profileId == id }.forEach {
-            app.parabol.recording.RecordingScheduler.cancel(getApplication<Application>(), it.id)
-            store.removeScheduledRecording(it.id)
-        }
         store.removeProfile(id)
         saveScope.launch { saveLock.withLock { contentCache.delete(id) } }
         refreshProfiles()
@@ -279,8 +250,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             contentError = false
             clearContent()
             loading = false
-            refreshRecordings()
-        }
+            }
     }
 
     /** Removes the currently active account (used by the Settings "logout" button). */
@@ -712,41 +682,4 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         return "$base/timeshift/$profileUsername/$profilePassword/$durationMinutes/$startStr/$streamId.ts"
     }
 
-    // ---- Recordings ----
-
-    fun scheduleRecording(channel: LiveStream, programTitle: String, startEpochSeconds: Long, endEpochSeconds: Long) {
-        val profile = store.activeProfile() ?: return
-        val nowSeconds = System.currentTimeMillis() / 1000
-        val recording = ScheduledRecording(
-            id = java.util.UUID.randomUUID().toString(),
-            profileId = profile.id,
-            streamId = channel.streamId,
-            channelName = channel.name,
-            programTitle = programTitle,
-            // "Record now" for a programme that is already on: start immediately.
-            startEpochSeconds = maxOf(startEpochSeconds, nowSeconds),
-            endEpochSeconds = endEpochSeconds,
-            streamUrl = if (profile.isM3u) channel.directSource else null
-        )
-        store.addScheduledRecording(recording)
-        app.parabol.recording.RecordingScheduler.schedule(getApplication<Application>(), recording, profile)
-        refreshRecordings()
-    }
-
-    fun cancelScheduledRecording(recording: ScheduledRecording) {
-        app.parabol.recording.RecordingScheduler.cancel(getApplication<Application>(), recording.id)
-        store.removeScheduledRecording(recording.id)
-        refreshRecordings()
-    }
-
-    fun deleteCompletedRecording(recording: CompletedRecording) {
-        try {
-            getApplication<Application>().contentResolver.delete(
-                android.net.Uri.parse(recording.contentUri), null, null
-            )
-        } catch (_: Exception) {
-        }
-        store.removeCompletedRecording(recording.id)
-        refreshRecordings()
-    }
 }

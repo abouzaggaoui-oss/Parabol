@@ -12,8 +12,8 @@ android {
         applicationId = "app.parabol"
         minSdk = 24
         targetSdk = 36
-        versionCode = 29
-        versionName = "2.7.1"
+        versionCode = 30
+        versionName = "2.8.0"
     }
 
     // Release signing: one fixed key, supplied by CI via environment variables
@@ -78,7 +78,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")

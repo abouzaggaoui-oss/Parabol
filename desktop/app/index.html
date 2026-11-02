@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data: blob:; img-src * data: blob:; media-src * blob: data: file: parabol-rec:; connect-src * parabol-rec:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data: blob:; img-src * data: blob:; media-src * blob: data: file:; connect-src *; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'" />
   <title>Parabol</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -21,7 +21,7 @@
     <div id="liveBanner" class="live-banner"></div>
   </div>
 
-  <!-- Player for movies, episodes, catch-up and recordings (see vod.js). -->
+  <!-- Player for movies, episodes and catch-up (see vod.js). -->
   <div id="vodPlayer" class="hidden">
     <video id="vodVideo" autoplay controls></video>
     <div id="vodLoading" class="vod-loading hidden"><div class="spinner big"></div></div>

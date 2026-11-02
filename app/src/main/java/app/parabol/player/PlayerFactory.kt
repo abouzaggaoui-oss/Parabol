@@ -24,7 +24,7 @@ object PlayerFactory {
             .setUserAgent("Parabol/2.2 (Android)")
             .setConnectTimeoutMs(15_000)
             .setReadTimeoutMs(20_000)
-        // DefaultDataSource keeps content:// and file:// working (recordings).
+        // DefaultDataSource keeps content:// and file:// links working.
         val dataSourceFactory = DefaultDataSource.Factory(context, httpFactory)
 
         // Movies often have AC3 / E-AC3 / DTS / TrueHD audio, which many

@@ -1,6 +1,6 @@
 {
   "name": "parabol-desktop",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "description": "Parabol media player for Windows and macOS",
   "main": "main.js",
   "author": "Parabol",
@@ -27,8 +27,6 @@
       "media.js",
       "app/**/*",
       "build/icon.ico",
-      "build/trayTemplate.png",
-      "build/trayTemplate@2x.png",
       "build/icon.png"
     ],
     "win": {

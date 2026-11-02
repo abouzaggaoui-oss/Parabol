@@ -7,15 +7,7 @@ contextBridge.exposeInMainWorld('parabolAPI', {
   mediaSubsBase: () => ipcRenderer.invoke('media:subsBase'),
   mediaStartInfo: (src, ss, start, audio) => ipcRenderer.invoke('media:startInfo', src, ss, start, audio),
   mediaAvailable: () => ipcRenderer.invoke('media:available'),
-  scheduleRecording: (recording) => ipcRenderer.invoke('recordings:schedule', recording),
-  cancelRecording: (id) => ipcRenderer.invoke('recordings:cancel', id),
-  deleteCompletedRecording: (id) => ipcRenderer.invoke('recordings:deleteCompleted', id),
-  getRecordings: () => ipcRenderer.invoke('recordings:getAll'),
   loadContent: (profileId) => ipcRenderer.invoke('content:load', profileId),
   saveContent: (profileId, data) => ipcRenderer.invoke('content:save', profileId, data),
   deleteContent: (profileId) => ipcRenderer.invoke('content:delete', profileId),
-  openRecordingsFolder: () => ipcRenderer.invoke('recordings:openFolder'),
-  onRecordingsChanged: (callback) => {
-    ipcRenderer.on('recordings:changed', (_event, data) => callback(data));
-  },
 });

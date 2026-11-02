@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Person
@@ -42,7 +41,7 @@ private val MoviesAccent = Color(0xFF9C8CFF) // soft violet
 private val SeriesAccent = Color(0xFF4FD1C5) // teal
 
 /**
- * Start screen after login: choose Live TV, Movies or Series. Recordings, settings and the
+ * Start screen after login: choose Live TV, Movies or Series. Settings and the
  * active account are reachable from the header. There is no bottom navigation bar.
  */
 @Composable
@@ -201,9 +200,6 @@ private fun HomeHeader(vm: MainViewModel, nowSeconds: Long, wide: Boolean, onOpe
             TvIconButton(onClick = { onOpen("accounts") }) {
                 Icon(Icons.Default.Person, contentDescription = stringResource(R.string.accounts_switch))
             }
-        }
-        TvIconButton(onClick = { onOpen("recordings") }) {
-            Icon(Icons.Default.FiberManualRecord, contentDescription = stringResource(R.string.tab_recordings))
         }
         TvIconButton(onClick = { onOpen("settings") }) {
             Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.tab_settings))
