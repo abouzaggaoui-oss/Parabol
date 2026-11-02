@@ -135,4 +135,9 @@
     <string name="settings_version">Versie %1$s</string>
     <string name="home_demo_notice">Demo-account: verzonnen zenders en tv-gids. Video\'s: open films van de Blender Foundation (CC BY 3.0), www.blender.org.</string>
     <string name="home_reading_stored">Opgeslagen lijsten openen…</string>
+    <string name="account_kind_xtream">Xtream</string>
+    <string name="account_kind_m3u">M3U-link</string>
+    <string name="m3u_playlist_url">Afspeellijst-link (M3U)</string>
+    <string name="m3u_guide_url">Tv-gids-link (XMLTV, optioneel)</string>
+    <string name="m3u_guide_hint">Leeg laten om de gids uit de afspeellijst te gebruiken.</string>
 </resources>

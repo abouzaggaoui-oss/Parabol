@@ -89,6 +89,10 @@ interface XtreamApi {
     ): EpgResponse
 
     companion object {
+        /** The right client for an account: M3U playlist or Xtream server. */
+        fun forProfile(profile: Profile): XtreamApi =
+            if (profile.isM3u) M3uApi.get(profile.baseUrl, profile.epgUrl) else create(profile.baseUrl)
+
         fun create(baseUrl: String): XtreamApi {
             if (DemoServer.isDemo(baseUrl)) return DemoXtreamApi()
             val normalized = baseUrl.trim().trimEnd('/') + "/"

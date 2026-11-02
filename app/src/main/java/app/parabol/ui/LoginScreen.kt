@@ -1,5 +1,6 @@
 package app.parabol.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -26,6 +27,9 @@ fun LoginScreen(vm: MainViewModel, onLoggedIn: () -> Unit, onBack: (() -> Unit)?
     var server by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var kind by remember { mutableStateOf("xtream") } // or "m3u"
+    var playlist by remember { mutableStateOf("") }
+    var guide by remember { mutableStateOf("") }
     var showFillWarning by remember { mutableStateOf(false) }
 
     // Leave the screen once THIS login succeeded (not because another account is already open).
@@ -71,50 +75,85 @@ fun LoginScreen(vm: MainViewModel, onLoggedIn: () -> Unit, onBack: (() -> Unit)?
                 .widthIn(max = 480.dp)
         )
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = server,
-            onValueChange = { server = it },
-            label = { Text(stringResource(R.string.login_server)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
-            keyboardActions = nextFieldActions(),
-            modifier = Modifier
-                .tvTextField()
-                .fillMaxWidth()
-                .widthIn(max = 480.dp)
-        )
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text(stringResource(R.string.login_username)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = nextFieldActions(),
-            modifier = Modifier
-                .tvTextField()
-                .fillMaxWidth()
-                .widthIn(max = 480.dp)
-        )
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text(stringResource(R.string.login_password)) },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-            keyboardActions = nextFieldActions(),
-            modifier = Modifier
-                .tvTextField()
-                .fillMaxWidth()
-                .widthIn(max = 480.dp)
-        )
+        AccountKindChoice(kind) { kind = it; showFillWarning = false }
+        if (kind == "m3u") {
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(
+                value = playlist,
+                onValueChange = { playlist = it },
+                label = { Text(stringResource(R.string.m3u_playlist_url)) },
+                placeholder = { Text("https://…/playlist.m3u") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
+                keyboardActions = nextFieldActions(),
+                modifier = Modifier.tvTextField().fillMaxWidth().widthIn(max = 480.dp)
+            )
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(
+                value = guide,
+                onValueChange = { guide = it },
+                label = { Text(stringResource(R.string.m3u_guide_url)) },
+                supportingText = { Text(stringResource(R.string.m3u_guide_hint)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
+                keyboardActions = nextFieldActions(),
+                modifier = Modifier.tvTextField().fillMaxWidth().widthIn(max = 480.dp)
+            )
+        } else {
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(
+                value = server,
+                onValueChange = { server = it },
+                label = { Text(stringResource(R.string.login_server)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
+                keyboardActions = nextFieldActions(),
+                modifier = Modifier
+                    .tvTextField()
+                    .fillMaxWidth()
+                    .widthIn(max = 480.dp)
+            )
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = { Text(stringResource(R.string.login_username)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = nextFieldActions(),
+                modifier = Modifier
+                    .tvTextField()
+                    .fillMaxWidth()
+                    .widthIn(max = 480.dp)
+            )
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text(stringResource(R.string.login_password)) },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                keyboardActions = nextFieldActions(),
+                modifier = Modifier
+                    .tvTextField()
+                    .fillMaxWidth()
+                    .widthIn(max = 480.dp)
+            )
+
+        }
         Spacer(Modifier.height(24.dp))
 
         Button(
             onClick = {
-                if (name.isBlank() || server.isBlank() || username.isBlank() || password.isBlank()) {
+                if (kind == "m3u") {
+                    if (name.isBlank() || playlist.isBlank()) {
+                        showFillWarning = true
+                    } else {
+                        showFillWarning = false
+                        vm.connectM3u(withScheme(playlist), guide.trim().takeIf { it.isNotBlank() }?.let(::withScheme).orEmpty(), name.trim())
+                    }
+                } else if (name.isBlank() || server.isBlank() || username.isBlank() || password.isBlank()) {
                     showFillWarning = true
                 } else {
                     showFillWarning = false
@@ -161,4 +200,40 @@ fun LoginScreen(vm: MainViewModel, onLoggedIn: () -> Unit, onBack: (() -> Unit)?
             TextButton(onClick = onBack) { Text(stringResource(R.string.recording_cancel_confirm)) }
         }
     }
+}
+
+/** "Xtream" or "M3U-link": which kind of account is being added. */
+@Composable
+fun AccountKindChoice(kind: String, onChange: (String) -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier.fillMaxWidth().widthIn(max = 480.dp)
+    ) {
+        listOf("xtream" to R.string.account_kind_xtream, "m3u" to R.string.account_kind_m3u).forEach { (key, label) ->
+            val selected = kind == key
+            Box(
+                Modifier
+                    .weight(1f)
+                    .tvClickable(cornerRadius = 22) { onChange(key) }
+                    .background(
+                        if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                        androidx.compose.foundation.shape.RoundedCornerShape(22.dp)
+                    )
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    stringResource(label),
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+
+/** "example.com/list.m3u" -> "http://example.com/list.m3u". */
+fun withScheme(url: String): String {
+    val t = url.trim()
+    return if (t.startsWith("http://", true) || t.startsWith("https://", true)) t else "http://$t"
 }

@@ -104,8 +104,12 @@ class RecordingWorker(
         val store = Store(applicationContext)
         // Demo account: record its sample video once (an mp4 file, not an endless stream).
         val demo = app.parabol.data.DemoServer.isDemo(baseUrl)
-        val url = if (demo) app.parabol.data.DemoServer.liveUrl(streamId)
-            else "${baseUrl.trimEnd('/')}/live/$username/$password/$streamId.ts"
+        val direct = inputData.getString("streamUrl")
+        val url = when {
+            demo -> app.parabol.data.DemoServer.liveUrl(streamId)
+            !direct.isNullOrBlank() -> direct // M3U account: the channel's own link
+            else -> "${baseUrl.trimEnd('/')}/live/$username/$password/$streamId.ts"
+        }
 
         val safeTitle = programTitle.replace(Regex("[^A-Za-z0-9 _\\-]"), "").ifBlank { "Opname" }
         val fileName = "Parabol - $safeTitle - ${System.currentTimeMillis()}." + (if (demo) "mp4" else "ts")

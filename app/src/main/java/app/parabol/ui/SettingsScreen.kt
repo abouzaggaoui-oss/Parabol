@@ -68,7 +68,7 @@ fun SettingsScreen(vm: MainViewModel, onLogout: () -> Unit, onManageGroups: () -
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Text(
-                        stringResource(R.string.settings_logged_in_as, vm.activeProfile?.username ?: ""),
+                        stringResource(R.string.settings_logged_in_as, vm.activeProfile?.let { if (it.isM3u) it.name else it.username } ?: ""),
                         style = MaterialTheme.typography.bodyLarge
                     )
                     val exp = vm.userInfo?.expDate?.toLongOrNull()
@@ -111,7 +111,7 @@ fun SettingsScreen(vm: MainViewModel, onLogout: () -> Unit, onManageGroups: () -
                             fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
                         )
                         Text(
-                            "${profile.username} · ${profile.baseUrl}",
+                            if (profile.isM3u) "M3U · ${profile.baseUrl}" else "${profile.username} · ${profile.baseUrl}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -302,6 +302,9 @@ private fun AddAccountForm(vm: MainViewModel, onDone: () -> Unit) {
     var server by rememberSaveable { mutableStateOf("") }
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+    var kind by rememberSaveable { mutableStateOf("xtream") }
+    var playlist by rememberSaveable { mutableStateOf("") }
+    var guide by rememberSaveable { mutableStateOf("") }
 
     // Close the form automatically once a new account has successfully been added.
     val initialProfileCount = remember { vm.profiles.size }
@@ -325,36 +328,62 @@ private fun AddAccountForm(vm: MainViewModel, onDone: () -> Unit) {
                 modifier = Modifier.fillMaxWidth().tvTextField()
             )
             Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = server,
-                onValueChange = { server = it },
-                label = { Text(stringResource(R.string.login_server)) },
-                singleLine = true,
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Next),
-                keyboardActions = nextFieldActions(),
-                modifier = Modifier.fillMaxWidth().tvTextField()
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text(stringResource(R.string.login_username)) },
-                singleLine = true,
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Next),
-                keyboardActions = nextFieldActions(),
-                modifier = Modifier.fillMaxWidth().tvTextField()
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text(stringResource(R.string.login_password)) },
-                singleLine = true,
-                visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
-                keyboardActions = nextFieldActions(),
-                modifier = Modifier.fillMaxWidth().tvTextField()
-            )
+            AccountKindChoice(kind) { kind = it }
+            if (kind == "m3u") {
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = playlist,
+                    onValueChange = { playlist = it },
+                    label = { Text(stringResource(R.string.m3u_playlist_url)) },
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Next),
+                    keyboardActions = nextFieldActions(),
+                    modifier = Modifier.fillMaxWidth().tvTextField()
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = guide,
+                    onValueChange = { guide = it },
+                    label = { Text(stringResource(R.string.m3u_guide_url)) },
+                    supportingText = { Text(stringResource(R.string.m3u_guide_hint)) },
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
+                    keyboardActions = nextFieldActions(),
+                    modifier = Modifier.fillMaxWidth().tvTextField()
+                )
+            } else {
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = server,
+                    onValueChange = { server = it },
+                    label = { Text(stringResource(R.string.login_server)) },
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Next),
+                    keyboardActions = nextFieldActions(),
+                    modifier = Modifier.fillMaxWidth().tvTextField()
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    label = { Text(stringResource(R.string.login_username)) },
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Next),
+                    keyboardActions = nextFieldActions(),
+                    modifier = Modifier.fillMaxWidth().tvTextField()
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text(stringResource(R.string.login_password)) },
+                    singleLine = true,
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
+                    keyboardActions = nextFieldActions(),
+                    modifier = Modifier.fillMaxWidth().tvTextField()
+                )
+            }
             if (vm.loginError) {
                 Spacer(Modifier.height(8.dp))
                 Text(
@@ -367,13 +396,16 @@ private fun AddAccountForm(vm: MainViewModel, onDone: () -> Unit) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
-                        var normalized = server.trim()
-                        if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
-                            normalized = "http://$normalized"
+                        if (kind == "m3u") {
+                            vm.connectM3u(withScheme(playlist), guide.trim().takeIf { it.isNotBlank() }?.let(::withScheme).orEmpty(), name.trim())
+                        } else {
+                            vm.connect(withScheme(server), username.trim(), password.trim(), name.trim())
                         }
-                        vm.connect(normalized, username.trim(), password.trim(), name.trim())
                     },
-                    enabled = !vm.loading && name.isNotBlank() && server.isNotBlank() && username.isNotBlank() && password.isNotBlank()
+                    enabled = !vm.loading && name.isNotBlank() && (
+                        if (kind == "m3u") playlist.isNotBlank()
+                        else server.isNotBlank() && username.isNotBlank() && password.isNotBlank()
+                    )
                 ) {
                     if (vm.loading) {
                         CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)

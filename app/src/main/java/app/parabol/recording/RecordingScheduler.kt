@@ -42,6 +42,7 @@ object RecordingScheduler {
             .putString("programTitle", recording.programTitle)
             .putLong("startEpochSeconds", recording.startEpochSeconds)
             .putLong("endEpochSeconds", recording.endEpochSeconds)
+            .putString("streamUrl", recording.streamUrl)
             .build()
 
         val request = OneTimeWorkRequestBuilder<RecordingWorker>()

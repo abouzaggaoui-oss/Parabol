@@ -161,6 +161,41 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /** Adds or re-opens an M3U account: the playlist must be readable and contain something. */
+    fun connectM3u(playlistUrl: String, guideUrl: String, profileName: String) {
+        loading = true
+        loginError = false
+        viewModelScope.launch {
+            try {
+                M3uApi.reset(playlistUrl.trim())
+                val client = M3uApi.get(playlistUrl.trim(), guideUrl.trim().ifBlank { null })
+                val response = client.login("", "")
+                if (response.userInfo?.auth == 1) {
+                    val profile = store.upsertProfile(profileName, playlistUrl.trim(), "", "", "m3u", guideUrl.trim())
+                    store.activeProfileId = profile.id
+                    clearContent()
+                    api = client
+                    userInfo = response.userInfo
+                    favorites = store.getFavorites()
+                    hiddenGroups = store.getHiddenGroups()
+                    epgOffsetHours = 0
+                    contentError = false
+                    isLoggedIn = true
+                    refreshProfiles()
+                    refreshRecordings()
+                    loadAll()
+                    loginSuccessTick++
+                } else {
+                    loginError = true
+                }
+            } catch (e: Exception) {
+                loginError = true
+            } finally {
+                loading = false
+            }
+        }
+    }
+
     /** Switches the active account and reloads everything scoped to it. */
     fun switchProfile(id: String) {
         val profile = store.getProfiles().firstOrNull { it.id == id } ?: return
@@ -177,7 +212,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         refreshRecordings()
         // Keep a client even if login fails, so "retry" and playback URLs still work.
         // create() throws on a malformed URL, so guard it rather than crash at startup.
-        val client = runCatching { XtreamApi.create(profile.baseUrl) }.getOrNull()
+        val client = runCatching { XtreamApi.forProfile(profile) }.getOrNull()
         api = client
         isLoggedIn = true
         if (client == null) {
@@ -262,8 +297,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      * "Manage groups"). [force] ("Refresh content") fetches all visible groups again.
      */
     fun loadAll(force: Boolean = false) {
+        val profile0 = store.activeProfile() ?: return
+        if (force && profile0.isM3u) {
+            // "Refresh content" for a playlist: read the playlist (and guide) again.
+            M3uApi.reset(profile0.baseUrl)
+            api = XtreamApi.forProfile(profile0)
+            epgCache.clear()
+        }
         val a = api ?: return
-        val profile = store.activeProfile() ?: return
+        val profile = profile0
         val u = profile.username
         val p = profile.password
         loadAllJob?.cancel()
@@ -609,21 +651,26 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val profilePassword get() = store.activeProfile()?.password ?: ""
 
     private val isDemo get() = app.parabol.data.DemoServer.isDemo(base)
+    private val isM3u get() = store.activeProfile()?.isM3u == true
 
     fun liveUrl(streamId: Int): String {
         if (isDemo) return app.parabol.data.DemoServer.liveUrl(streamId)
+        if (isM3u) return liveStreams.firstOrNull { it.streamId == streamId }?.directSource.orEmpty()
         val ext = if (store.useHls) "m3u8" else "ts"
         return "$base/live/$profileUsername/$profilePassword/$streamId.$ext"
     }
 
     fun movieUrl(streamId: Int, containerExtension: String?): String {
         if (isDemo) return app.parabol.data.DemoServer.movieUrl(streamId)
+        if (isM3u) return vodStreams.firstOrNull { it.streamId == streamId }?.directSource.orEmpty()
         val ext = containerExtension?.takeIf { it.isNotBlank() } ?: "mp4"
         return "$base/movie/$profileUsername/$profilePassword/$streamId.$ext"
     }
 
     fun episodeUrl(episodeId: String, containerExtension: String?): String {
         if (isDemo) return app.parabol.data.DemoServer.episodeUrl(episodeId)
+        if (isM3u) return seriesInfo?.episodes.orEmpty().values.flatten()
+            .firstOrNull { it.id == episodeId }?.directSource.orEmpty()
         val ext = containerExtension?.takeIf { it.isNotBlank() } ?: "mp4"
         return "$base/series/$profileUsername/$profilePassword/$episodeId.$ext"
     }
@@ -638,7 +685,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
      * Timeshift is requested as .ts: many panels don't serve timeshift over HLS.
      */
     fun catchupUrl(streamId: Int, serverStart: String?, startEpochSeconds: Long, durationMinutes: Int): String {
-        if (isDemo) return app.parabol.data.DemoServer.liveUrl(streamId)
+        if (isDemo || isM3u) return liveUrl(streamId)
         val match = serverStart?.let {
             Regex("(\\d{4}-\\d{2}-\\d{2})[ T](\\d{2}):(\\d{2})").find(it)
         }
@@ -676,7 +723,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             programTitle = programTitle,
             // "Record now" for a programme that is already on: start immediately.
             startEpochSeconds = maxOf(startEpochSeconds, nowSeconds),
-            endEpochSeconds = endEpochSeconds
+            endEpochSeconds = endEpochSeconds,
+            streamUrl = if (profile.isM3u) channel.directSource else null
         )
         store.addScheduledRecording(recording)
         app.parabol.recording.RecordingScheduler.schedule(getApplication<Application>(), recording, profile)

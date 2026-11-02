@@ -37,13 +37,18 @@ class Store(context: Context) {
         prefs.edit().putString("profiles", gson.toJson(profiles)).apply()
     }
 
-    fun addProfile(name: String, baseUrl: String, username: String, password: String): Profile {
+    fun addProfile(
+        name: String, baseUrl: String, username: String, password: String,
+        kind: String? = null, epgUrl: String? = null
+    ): Profile {
         val profile = Profile(
             id = UUID.randomUUID().toString(),
             name = name.ifBlank { username },
-            baseUrl = baseUrl.trimEnd('/'),
+            baseUrl = if (kind == "m3u") baseUrl.trim() else baseUrl.trimEnd('/'),
             username = username,
-            password = password
+            password = password,
+            kind = kind,
+            epgUrl = epgUrl?.ifBlank { null }
         )
         val updated = getProfiles() + profile
         setProfiles(updated)
@@ -56,16 +61,20 @@ class Store(context: Context) {
      * entered again (e.g. after a password change). Keeps its id, so its favorites,
      * hidden groups and recordings stay attached to it.
      */
-    fun upsertProfile(name: String, baseUrl: String, username: String, password: String): Profile {
-        val normalizedUrl = baseUrl.trimEnd('/')
+    fun upsertProfile(
+        name: String, baseUrl: String, username: String, password: String,
+        kind: String? = null, epgUrl: String? = null
+    ): Profile {
+        val normalizedUrl = if (kind == "m3u") baseUrl.trim() else baseUrl.trimEnd('/')
         val profiles = getProfiles()
         val existing = profiles.firstOrNull {
-            it.baseUrl.equals(normalizedUrl, ignoreCase = true) && it.username == username
-        } ?: return addProfile(name, baseUrl, username, password)
+            it.baseUrl.equals(normalizedUrl, ignoreCase = true) && it.username == username && it.kind == kind
+        } ?: return addProfile(name, baseUrl, username, password, kind, epgUrl)
         val updated = existing.copy(
             name = name.ifBlank { existing.name },
             baseUrl = normalizedUrl,
-            password = password
+            password = password,
+            epgUrl = epgUrl?.ifBlank { null }
         )
         setProfiles(profiles.map { if (it.id == existing.id) updated else it })
         return updated

@@ -1,13 +1,21 @@
 package app.parabol.data
 
-/** One Xtream account. Favorites and hidden groups are scoped per profile. */
+/**
+ * One account. Favorites and hidden groups are scoped per profile.
+ * Xtream: server + username + password. M3U ([kind] "m3u"): [baseUrl] is the playlist
+ * link, [epgUrl] an optional guide (XMLTV) link; username and password are empty.
+ */
 data class Profile(
     val id: String,
     val name: String,
     val baseUrl: String,
     val username: String,
-    val password: String
-)
+    val password: String,
+    val kind: String? = null,
+    val epgUrl: String? = null
+) {
+    val isM3u get() = kind == "m3u"
+}
 
 /** A recording the user has scheduled for a future (or currently airing) programme. */
 data class ScheduledRecording(
@@ -17,7 +25,9 @@ data class ScheduledRecording(
     val channelName: String,
     val programTitle: String,
     val startEpochSeconds: Long,
-    val endEpochSeconds: Long
+    val endEpochSeconds: Long,
+    /** Full stream link to record (M3U accounts); null = built from the Xtream server. */
+    val streamUrl: String? = null
 ) {
     val durationMinutes: Int
         get() = ((endEpochSeconds - startEpochSeconds) / 60).toInt().coerceAtLeast(1)

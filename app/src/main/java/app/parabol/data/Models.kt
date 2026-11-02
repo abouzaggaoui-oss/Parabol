@@ -41,7 +41,9 @@ data class LiveStream(
     @SerializedName("epg_channel_id") val epgChannelId: String? = null,
     @SerializedName("category_id") val categoryId: String? = null,
     @SerializedName("tv_archive") val tvArchive: Int? = null,
-    @SerializedName("tv_archive_duration") val tvArchiveDuration: String? = null
+    @SerializedName("tv_archive_duration") val tvArchiveDuration: String? = null,
+    /** Full stream link (M3U accounts; Xtream builds the link from the id). */
+    @SerializedName("direct_source") val directSource: String? = null
 ) {
     val hasCatchup: Boolean get() = tvArchive == 1
     val catchupDurationDays: Int get() = tvArchiveDuration?.toIntOrNull() ?: 0
@@ -55,7 +57,9 @@ data class VodStream(
     @SerializedName("stream_icon") val streamIcon: String? = null,
     @SerializedName("category_id") val categoryId: String? = null,
     @SerializedName("container_extension") val containerExtension: String? = null,
-    @SerializedName("rating") val rating: String? = null
+    @SerializedName("rating") val rating: String? = null,
+    /** Full stream link (M3U accounts). */
+    @SerializedName("direct_source") val directSource: String? = null
 )
 
 // ---------- Series ----------
@@ -85,7 +89,9 @@ data class Episode(
     @SerializedName("title") val title: String? = null,
     @SerializedName("container_extension") val containerExtension: String? = null,
     @SerializedName("episode_num") val episodeNum: Any? = null,
-    @SerializedName("season") val season: Any? = null
+    @SerializedName("season") val season: Any? = null,
+    /** Full stream link (M3U accounts). */
+    @SerializedName("direct_source") val directSource: String? = null
 ) {
     val episodeNumber: String
         get() = when (episodeNum) {

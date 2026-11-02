@@ -135,4 +135,9 @@
     <string name="settings_version">Version %1$s</string>
     <string name="home_demo_notice">Demo account: fictional channels and guide. Videos: open movies by the Blender Foundation (CC BY 3.0), www.blender.org.</string>
     <string name="home_reading_stored">Opening saved lists…</string>
+    <string name="account_kind_xtream">Xtream</string>
+    <string name="account_kind_m3u">M3U link</string>
+    <string name="m3u_playlist_url">Playlist link (M3U)</string>
+    <string name="m3u_guide_url">TV guide link (XMLTV, optional)</string>
+    <string name="m3u_guide_hint">Leave empty to use the guide named in the playlist.</string>
 </resources>
