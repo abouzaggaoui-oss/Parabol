@@ -67,8 +67,10 @@ jobs:
             exit 1
           }
           # Fail if the APK isn't signed with the registered Parabol key.
-          EXPECTED="D6:4B:18:1B:3E:6C:74:15:E4:DF:E3:A5:C8:19:41:47:33:7E:9F:A5:21:67:F8:B7:65:E9:44:AD:5C:BE:F9:9D"
-          keytool -printcert -jarfile app/build/outputs/apk/release/app-release.apk | grep -q "SHA256: $EXPECTED" \
+          # With minSdk 24+ the APK only has the v2 signature, which keytool can't read: use apksigner.
+          EXPECTED="d64b181b3e6c7415e4dfe3a5c8194147337e9fa52167f8b765e944ad5cbef99d"
+          APKSIGNER=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)/apksigner
+          $APKSIGNER verify --print-certs app/build/outputs/apk/release/app-release.apk | grep -q "SHA-256 digest: $EXPECTED" \
             || { echo "::error title=Wrong signing key::APK fingerprint does not match the registered key"; exit 1; }
 
       - name: Rename APK to include version
