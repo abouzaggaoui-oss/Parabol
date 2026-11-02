@@ -1,0 +1,26 @@
+== zipalign 16 KB
+12943360 lib/arm64-v8a/libffmpegJNI.so (OK)
+14417920 lib/armeabi-v7a/libffmpegJNI.so (OK)
+15794176 lib/x86/libffmpegJNI.so (OK)
+17285120 lib/x86_64/libffmpegJNI.so (OK)
+Verification successful
+== ELF LOAD alignment
+lib/arm64-v8a/libffmpegJNI.so [16384] OK
+lib/armeabi-v7a/libffmpegJNI.so [16384] OK
+lib/x86/libffmpegJNI.so [16384] OK
+lib/x86_64/libffmpegJNI.so [16384] OK
+== badging
+package: name='app.parabol' versionCode='30' versionName='2.8.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+targetSdkVersion:'36'
+uses-permission: name='android.permission.INTERNET'
+uses-permission: name='android.permission.ACCESS_NETWORK_STATE'
+uses-permission: name='app.parabol.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+leanback-launchable-activity: name='app.parabol.MainActivity'  label='' icon='' banner=''
+  uses-feature-not-required: name='android.hardware.touchscreen'
+  uses-feature-not-required: name='android.software.leanback'
+== signature
+V2 Signer: certificate SHA-256 digest: d64b181b3e6c7415e4dfe3a5c8194147337e9fa52167f8b765e944ad5cbef99d
+total 15992
+drwxr-xr-x 2 runner runner     4096 Nov  2 16:20 .
+drwxr-xr-x 3 runner runner     4096 Nov  2 16:20 ..
+-rw-r--r-- 1 runner runner 16366868 Nov  2 16:20 app-release.aab
