@@ -210,7 +210,7 @@ SCREENS.seriesDetail = ({ item }) => {
     }
     const list = episodes[season].slice().sort((a, b) => (parseInt(a.episode_num, 10) || 0) - (parseInt(b.episode_num, 10) || 0));
     const queue = list.map((ep) => {
-      const url = Xtream.episodeUrl(ep.id, ep.container_extension);
+      const url = Xtream.episodeUrl(ep.id, ep.container_extension, ep.direct_source);
       return { url, title: `${meta.name || item.name} — ${ep.title || 'Aflevering ' + ep.episode_num}`, resumeKey: resumeKeyFor(url) };
     });
     list.forEach((ep, i) => {

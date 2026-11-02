@@ -44,6 +44,7 @@ function applyProfileSettings() {
  * force ("Vernieuwen") fetches all visible groups again. Newer calls win over older ones.
  */
 async function loadAll(force = false) {
+  if (force && Xtream.isM3u) { M3uSource.reset(Xtream.base); M.epgCache.clear(); } // read the playlist again
   const token = ++M._loadToken;
   const profile = Store.activeProfile();
   const api = window.parabolAPI;
@@ -147,11 +148,35 @@ async function connectAccount(name, server, username, password) {
   loadAll();
 }
 
+/** Adds or re-opens an M3U account: the playlist must be readable and contain something. */
+async function connectM3u(name, playlistUrl, guideUrl) {
+  const withScheme = (u) => (u && !/^https?:\/\//i.test(u.trim()) ? 'http://' + u.trim() : (u || '').trim());
+  const url = withScheme(playlistUrl);
+  const guide = withScheme(guideUrl);
+  if (!url) throw new Error('Vul de link van de afspeellijst in.');
+  M3uSource.reset(url);
+  Xtream.configure(url, '', '', 'm3u', guide);
+  let res;
+  try {
+    res = await Xtream.login();
+  } catch (e) {
+    throw new Error('De afspeellijst kon niet worden gelezen. Controleer de link.');
+  }
+  if (!res || !res.user_info || res.user_info.auth !== 1) throw new Error('De afspeellijst bevat geen zenders, films of series.');
+  const profile = Store.upsertProfile(name, url, '', '', 'm3u', guide);
+  Store.activeProfileId = profile.id;
+  M.userInfo = res.user_info;
+  M.snapshot = null; M._loadToken++;
+  applyProfileSettings();
+  await refreshRecordings();
+  loadAll();
+}
+
 function activateProfile(id) {
   const profile = Store.getProfiles().find((p) => p.id === id);
   if (!profile) return false;
   Store.activeProfileId = id;
-  Xtream.configure(profile.baseUrl, profile.username, profile.password);
+  Xtream.configure(profile.baseUrl, profile.username, profile.password, profile.kind, profile.epgUrl);
   M.userInfo = null;
   M.snapshot = null; M._loadToken++;
   M.liveCategories = []; M.vodCategories = []; M.seriesCategories = [];
@@ -174,14 +199,24 @@ function toggleFavorite(key) {
 // ---------- Groups: visibility and countries ----------
 
 const CODE_REGEX = /^[^A-Za-z0-9]*([A-Za-z]{2,3})\s*[|:\-–—•]/;
-const NOT_A_COUNTRY = new Set(['HD', 'FHD', 'UHD', 'SD', 'VIP', 'PPV', 'VOD', 'XXX', 'TOP', 'NEW', 'ALL', 'TV', 'THE', 'LIVE']);
+// Only real two-letter country or language codes count ("NL", "UK", "EN"); "TV" and "SD"
+// are country codes too, but in group names they nearly always mean television / quality.
+const REGION_NAMES = new Intl.DisplayNames(['en'], { type: 'region' });
+const LANGUAGE_NAMES = new Intl.DisplayNames(['en'], { type: 'language' });
+function isCountryOrLanguage(code) {
+  if (code === 'UK') return true;
+  try { if (REGION_NAMES.of(code) !== code) return true; } catch (e) { /* not a region */ }
+  try { if (LANGUAGE_NAMES.of(code.toLowerCase()) !== code.toLowerCase()) return true; } catch (e) { /* not a language */ }
+  return false;
+}
 
 function extractCode(name) {
   if (!name) return null;
   const m = CODE_REGEX.exec(String(name).trim());
   if (!m) return null;
   const code = m[1].toUpperCase();
-  return NOT_A_COUNTRY.has(code) ? null : code;
+  if (code.length !== 2 || code === 'TV' || code === 'SD') return null;
+  return isCountryOrLanguage(code) ? code : null;
 }
 
 function categoriesOf(type) {
@@ -242,7 +277,7 @@ function toggleCountry(type, country) {
   setGroupsHidden(type, country.categories, country.visible === country.total);
 }
 
-/** "NL" -> "Nederland" in Dutch; handles the usual IPTV prefixes. */
+/** "NL" -> "Nederland" in Dutch; handles the usual group name prefixes. */
 function countryName(code) {
   if (!code) return 'Overig (geen land)';
   try {

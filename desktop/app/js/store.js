@@ -52,14 +52,16 @@ const Store = {
     localStorage.setItem('parabol_profiles', JSON.stringify(list));
   },
 
-  addProfile(name, baseUrl, username, password) {
+  addProfile(name, baseUrl, username, password, kind = 'xtream', epgUrl = '') {
     const id = 'profile_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
     const profile = {
       id,
       name: name || username,
-      baseUrl: baseUrl.replace(/\/+$/, ''),
+      baseUrl: kind === 'm3u' ? baseUrl.trim() : baseUrl.replace(/\/+$/, ''),
       username,
       password,
+      kind,
+      epgUrl,
     };
     this._setProfiles(this.getProfiles().concat([profile]));
     if (!this.activeProfileId) this.activeProfileId = id;
@@ -127,17 +129,18 @@ const Store = {
   },
 
   /** Updates an existing profile with the same server + username instead of adding a duplicate. */
-  upsertProfile(name, baseUrl, username, password) {
-    const base = baseUrl.replace(/\/+$/, '');
+  upsertProfile(name, baseUrl, username, password, kind = 'xtream', epgUrl = '') {
+    const base = kind === 'm3u' ? baseUrl.trim() : baseUrl.replace(/\/+$/, '');
     const list = this.getProfiles();
-    const existing = list.find((p) => p.baseUrl === base && p.username === username);
+    const existing = list.find((p) => p.baseUrl === base && p.username === username && (p.kind || 'xtream') === kind);
     if (existing) {
       existing.password = password;
+      existing.epgUrl = epgUrl;
       if (name) existing.name = name;
       this._setProfiles(list);
       return existing;
     }
-    return this.addProfile(name, base, username, password);
+    return this.addProfile(name, base, username, password, kind, epgUrl);
   },
 
   // ---- Guide time correction in hours (per profile) ----

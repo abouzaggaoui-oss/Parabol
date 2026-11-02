@@ -18,7 +18,7 @@ SCREENS.settings = () => {
     const exp = M.userInfo && parseInt(M.userInfo.exp_date, 10);
     inner.appendChild(h('div.card', null, h('div.card-row', null,
       h('div.grow', null,
-        h('div', { text: 'Ingelogd als ' + (active ? active.username : '') }),
+        h('div', { text: 'Ingelogd als ' + (active ? (active.kind === 'm3u' ? active.name : active.username) : '') }),
         exp ? h('div.hint', { text: 'Abonnement geldig tot ' + formatDate(exp) }) : null),
       h('button.btn.btn-outline', { onclick: () => { loadAll(true); toast('Lijsten worden vernieuwd…'); } }, 'Vernieuwen'))));
 
@@ -29,7 +29,7 @@ SCREENS.settings = () => {
       inner.appendChild(h('div.card', null, h('div.card-row', null,
         h('div.grow', null,
           h('div', { style: { fontWeight: 600 }, text: p.name }),
-          h('div.hint.ellipsis', { text: `${p.username} · ${p.baseUrl}` })),
+          h('div.hint.ellipsis', { text: p.kind === 'm3u' ? `M3U · ${p.baseUrl}` : `${p.username} · ${p.baseUrl}` })),
         isActive ? h('span.amber', { style: { fontWeight: 600, marginRight: '8px' }, text: 'Actief' })
           : h('button.btn.btn-outline', { onclick: () => { activateProfile(p.id); openHome(); } }, 'Wissel naar dit account'),
         h('button.btn.btn-text', {

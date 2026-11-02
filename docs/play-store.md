@@ -4,14 +4,14 @@
 Parabol
 
 ## Korte beschrijving (max. 80 tekens)
-- NL: Speler voor live tv, films en series van je eigen Xtream-abonnement.
-- EN: Player for live TV, movies and series from your own Xtream subscription.
+- NL: Speler voor live tv, films en series van je eigen abonnement (Xtream of M3U).
+- EN: Player for live TV, movies and series from your own subscription (Xtream or M3U).
 
 ## Volledige beschrijving (NL)
 
-Parabol is een overzichtelijke speler voor je telefoon en Google TV. Je logt in met de gegevens van je eigen aanbieder (Xtream Codes API) en kijkt live tv, films en series in één app.
+Parabol is een overzichtelijke speler voor je telefoon en Google TV. Je logt in met de gegevens van je eigen aanbieder (Xtream Codes API) of plakt de link van je afspeellijst (M3U), en kijkt live tv, films en series in één app.
 
-Belangrijk: Parabol bevat geen zenders, films, series of afspeellijsten en verkoopt geen abonnementen. Je hebt een eigen, geldig abonnement nodig bij een aanbieder die de Xtream Codes API ondersteunt. Parabol is niet verbonden aan een aanbieder of omroep.
+Belangrijk: Parabol bevat geen zenders, films, series of afspeellijsten en verkoopt geen abonnementen. Je hebt een eigen, geldig abonnement nodig bij een aanbieder die de Xtream Codes API of een M3U-afspeellijst levert. Parabol is niet verbonden aan een aanbieder of omroep.
 
 Functies
 • Live tv met groepen, zoeken en een tijdlijn van de tv-gids
@@ -20,7 +20,7 @@ Functies
 • Favorieten
 • Groepen kiezen per land of per groep
 • Opnemen en terugkijken, als je aanbieder dat ondersteunt
-• Meerdere accounts
+• Meerdere accounts, Xtream of M3U-afspeellijst (met XMLTV-tv-gids)
 • Audiospoor en ondertiteling kiezen, ook eigen .srt-bestanden
 • Gemaakt voor de afstandsbediening van Google TV én voor touch
 • Nederlands en Engels
@@ -29,9 +29,9 @@ Privacy: Parabol verzamelt geen gegevens en heeft geen advertenties. Je gegevens
 
 ## Full description (EN)
 
-Parabol is a clean player for your phone and Google TV. Sign in with the details of your own provider (Xtream Codes API) and watch live TV, movies and series in one app.
+Parabol is a clean player for your phone and Google TV. Sign in with the details of your own provider (Xtream Codes API) or paste your playlist link (M3U), and watch live TV, movies and series in one app.
 
-Important: Parabol does not include any channels, movies, series or playlists and does not sell subscriptions. You need your own valid subscription with a provider that supports the Xtream Codes API. Parabol is not affiliated with any provider or broadcaster.
+Important: Parabol does not include any channels, movies, series or playlists and does not sell subscriptions. You need your own valid subscription with a provider that offers the Xtream Codes API or an M3U playlist. Parabol is not affiliated with any provider or broadcaster.
 
 Features
 • Live TV with groups, search and a TV guide timeline
@@ -40,7 +40,7 @@ Features
 • Favorites
 • Choose groups per country or per group
 • Recording and catch-up, if your provider supports it
-• Multiple accounts
+• Multiple accounts, Xtream or M3U playlist (with XMLTV guide)
 • Choose audio and subtitle tracks, including your own .srt files
 • Built for the Google TV remote and for touch
 • Dutch and English

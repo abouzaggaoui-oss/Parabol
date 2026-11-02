@@ -5,10 +5,25 @@ const Xtream = {
   username: '',
   password: '',
 
-  configure(base, username, password) {
-    this.base = base.replace(/\/+$/, '');
-    this.username = username;
-    this.password = password;
+  kind: 'xtream', // or 'm3u': base is then the playlist link
+  epgUrl: '',
+
+  configure(base, username, password, kind = 'xtream', epgUrl = '') {
+    this.kind = kind || 'xtream';
+    this.base = this.kind === 'm3u' ? base.trim() : base.replace(/\/+$/, '');
+    this.username = username || '';
+    this.password = password || '';
+    this.epgUrl = epgUrl || '';
+  },
+
+  get isM3u() {
+    return this.kind === 'm3u';
+  },
+
+  /** M3U: the item's own link, as stored with the lists. */
+  directLink(list, key, id) {
+    const item = (list || []).find((x) => String(x[key]) === String(id));
+    return (item && item.direct_source) || '';
   },
 
   get isDemo() {
@@ -17,6 +32,7 @@ const Xtream = {
 
   async call(action, params = {}) {
     if (this.isDemo) return DemoServer.respond(action || '', params, this.username, this.password);
+    if (this.isM3u) return M3uSource.respond(this.base, this.epgUrl, action || '', params);
     const url = new URL(this.base + '/player_api.php');
     url.searchParams.set('username', this.username);
     url.searchParams.set('password', this.password);
@@ -64,19 +80,23 @@ const Xtream = {
 
   liveUrl(streamId, ext = 'm3u8') {
     if (this.isDemo) return DemoServer.liveUrl(streamId);
+    if (this.isM3u) return this.directLink(M.liveStreams, 'stream_id', streamId);
     return `${this.base}/live/${this.username}/${this.password}/${streamId}.${ext}`;
   },
   /** Raw MPEG-TS URL, used specifically for recording (simple byte-copy download). */
   rawTsUrl(streamId) {
     if (this.isDemo) return DemoServer.liveUrl(streamId); // an mp4 file: recorded whole
+    if (this.isM3u) return this.directLink(M.liveStreams, 'stream_id', streamId);
     return `${this.base}/live/${this.username}/${this.password}/${streamId}.ts`;
   },
   movieUrl(streamId, ext) {
     if (this.isDemo) return DemoServer.movieUrl(streamId);
+    if (this.isM3u) return this.directLink(M.vodStreams, 'stream_id', streamId);
     return `${this.base}/movie/${this.username}/${this.password}/${streamId}.${ext || 'mp4'}`;
   },
-  episodeUrl(episodeId, ext) {
+  episodeUrl(episodeId, ext, direct) {
     if (this.isDemo) return DemoServer.episodeUrl(episodeId);
+    if (this.isM3u) return direct || '';
     return `${this.base}/series/${this.username}/${this.password}/${episodeId}.${ext || 'mp4'}`;
   },
   /**
@@ -85,7 +105,7 @@ const Xtream = {
    * (server-local) is used when present, shifted by the user's guide correction.
    */
   catchupUrl(streamId, serverStart, startEpochSeconds, durationMinutes, offsetHours = 0) {
-    if (this.isDemo) return DemoServer.liveUrl(streamId);
+    if (this.isDemo || this.isM3u) return this.liveUrl(streamId);
     const pad = (n) => String(n).padStart(2, '0');
     const fmt = (d) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}:${pad(d.getUTCHours())}-${pad(d.getUTCMinutes())}`;
     let startStr;

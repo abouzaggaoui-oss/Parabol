@@ -290,7 +290,7 @@ private fun GroupRow(name: String, visible: Boolean, onClick: () -> Unit) {
     }
 }
 
-/** "NL" -> "Nederland" (in the phone's language). Handles the usual IPTV prefixes. */
+/** "NL" -> "Nederland" (in the phone's language). Handles the usual group name prefixes. */
 @Composable
 private fun countryName(code: String?): String {
     if (code == null) return stringResource(R.string.country_other)

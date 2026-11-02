@@ -315,7 +315,7 @@ private object Demo {
     fun applyAccounts(vm: MainViewModel) {
         apply(vm, profiles = listOf(
             Profile("demo", "Thuis", "https://tv.voorbeeld.invalid", "anouar", "x"),
-            Profile("demo2", "Vakantiehuis", "https://iptv.voorbeeld.invalid", "zomer", "x"),
+            Profile("demo2", "Vakantiehuis", "https://media.voorbeeld.invalid", "zomer", "x"),
             Profile("demo3", "Sport", "https://sport.voorbeeld.invalid", "sportfan", "x")
         ))
     }

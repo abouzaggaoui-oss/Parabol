@@ -1,6 +1,6 @@
 /* Parabol Desktop — media helper in the main process.
  *
- * Chromium's built-in player can't play many IPTV movie files: Matroska (.mkv), AVI, and audio
+ * Chromium's built-in player can't play many movie files: Matroska (.mkv), AVI, and audio
  * in AC3 / E-AC3 / DTS / TrueHD. For those, a bundled ffmpeg
  *   1. probes the file (container, codecs, audio tracks, duration), and
  *   2. converts it on the fly to fragmented MP4 (video copied when possible, audio to AAC),
@@ -163,7 +163,7 @@ function createMediaService(app, resolveRecordingPath) {
 
     // Audio and video are cut at the same point (the keyframe), and the audio is padded or
     // trimmed so its first sample lines up exactly with the first picture. Without this, files
-    // whose audio starts a little before/after the video (common with IPTV files) or a jump to
+    // whose audio starts a little before/after the video (common with movie files) or a jump to
     // a point between keyframes play with the sound seconds early or late: the fragmented MP4
     // that the player reads starts every track at 0.
     const args = ['-hide_banner', '-loglevel', 'error', '-nostdin'];

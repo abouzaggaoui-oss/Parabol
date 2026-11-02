@@ -37,7 +37,7 @@ import kotlin.coroutines.coroutineContext
  * and more robust than stitching HLS segments, and concatenated MPEG-TS stays playable.
  *
  * Reliability:
- *  - IPTV streams regularly drop or stall. Instead of ending the recording at the first
+ *  - Live streams regularly drop or stall. Instead of ending the recording at the first
  *    hiccup, the worker reconnects and keeps appending until the end time.
  *  - A read timeout makes a stalled connection fail fast (the old version used no
  *    timeout, so a stall could hang forever and overrun the end time).

@@ -585,16 +585,18 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private val codeRegex = Regex("^[^A-Za-z0-9]*([A-Za-z]{2,3})\\s*[|:\\-–—•]")
 
-    // Prefixes that providers put in front of group names but that are not a country/language.
-    private val notACountry = setOf(
-        "HD", "FHD", "UHD", "SD", "VIP", "PPV", "VOD", "XXX", "TOP", "NEW", "ALL", "TV", "THE", "LIVE"
-    )
+    // Only real two-letter country or language codes count ("NL", "UK", "EN"); other
+    // prefixes in front of group names are not a country. "TV" and "SD" are also
+    // country codes, but in group names they nearly always mean television / quality.
+    private val countryCodes = java.util.Locale.getISOCountries().toSet() + "UK"
+    private val languageCodes = java.util.Locale.getISOLanguages().map { it.uppercase() }.toSet()
 
     /** "NL | Sport" -> "NL"; null when the name doesn't start with a country/language code. */
     fun extractCode(name: String?): String? {
         if (name.isNullOrBlank()) return null
-        val match = codeRegex.find(name.trim()) ?: return null
-        return match.groupValues[1].uppercase().takeUnless { it in notACountry }
+        val code = codeRegex.find(name.trim())?.groupValues?.get(1)?.uppercase() ?: return null
+        if (code.length != 2 || code == "TV" || code == "SD") return null
+        return code.takeIf { it in countryCodes || it in languageCodes }
     }
 
     /**

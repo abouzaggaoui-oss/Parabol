@@ -5,9 +5,31 @@ SCREENS.login = (params) => {
   const server = h('input.input', { placeholder: 'http://server.voorbeeld.com:8080', autofocus: true });
   const user = h('input.input', { autocomplete: 'off' });
   const pass = h('input.input', { type: 'password' });
+  const playlist = h('input.input', { placeholder: 'https://…/playlist.m3u' });
+  const guide = h('input.input', { placeholder: 'Leeg laten om de gids uit de afspeellijst te gebruiken' });
   const error = h('div.error-text');
   const button = h('button.btn', { style: { justifyContent: 'center', padding: '12px' } }, 'Verbinden');
   const adding = !!params.adding;
+  let kind = 'xtream';
+
+  const xtreamFields = h('div.login-fields', null,
+    h('label', { text: 'Server-URL' }), server,
+    h('label', { text: 'Gebruikersnaam' }), user,
+    h('label', { text: 'Wachtwoord' }), pass);
+  const m3uFields = h('div.login-fields.hidden', null,
+    h('label', { text: 'Afspeellijst-link (M3U)' }), playlist,
+    h('label', { text: 'Tv-gids-link (XMLTV, optioneel)' }), guide);
+  const kindBtn = (key, label) => h('button.tab-pill' + (key === kind ? '.active' : ''), {
+    onclick: () => {
+      kind = key;
+      kindRow.querySelectorAll('.tab-pill').forEach((b) => b.classList.toggle('active', b.dataset.kind === kind));
+      xtreamFields.classList.toggle('hidden', kind !== 'xtream');
+      m3uFields.classList.toggle('hidden', kind !== 'm3u');
+      error.textContent = '';
+    },
+  }, label);
+  const kindRow = h('div.row.gap-12', null, kindBtn('xtream', 'Xtream'), kindBtn('m3u', 'M3U-link'));
+  kindRow.querySelectorAll('.tab-pill').forEach((b, i) => { b.dataset.kind = i === 0 ? 'xtream' : 'm3u'; });
 
   async function submit() {
     error.textContent = '';
@@ -15,7 +37,8 @@ SCREENS.login = (params) => {
     button.textContent = 'Verbinden…';
     try {
       if (!name.value.trim()) throw new Error('Geef het account een naam.');
-      await connectAccount(name.value.trim(), server.value, user.value.trim(), pass.value);
+      if (kind === 'm3u') await connectM3u(name.value.trim(), playlist.value, guide.value);
+      else await connectAccount(name.value.trim(), server.value, user.value.trim(), pass.value);
       openHome();
     } catch (e) {
       error.textContent = e.message || 'Verbinden mislukt.';
@@ -24,16 +47,16 @@ SCREENS.login = (params) => {
     button.textContent = 'Verbinden';
   }
   button.addEventListener('click', submit);
-  [name, server, user, pass].forEach((i) => i.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); }));
+  [name, server, user, pass, playlist, guide].forEach((i) => i.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); }));
 
   const el = h('div.login', null,
     h('div.login-card', null,
       h('div.login-brand', null, h('img', { src: 'img/logo.svg', alt: '' }), h('div.name', { text: 'Parabol' })),
-      h('div.muted', { text: adding ? 'Voeg een extra account toe.' : 'Verbind met je Xtream-aanbieder.' }),
+      h('div.muted', { text: adding ? 'Voeg een extra account toe.' : 'Verbind met je aanbieder.' }),
       h('label', { text: 'Naam voor dit account' }), name,
-      h('label', { text: 'Server-URL' }), server,
-      h('label', { text: 'Gebruikersnaam' }), user,
-      h('label', { text: 'Wachtwoord' }), pass,
+      kindRow,
+      xtreamFields,
+      m3uFields,
       error,
       button,
       adding ? h('button.btn.btn-text', { onclick: () => Router.back() }, 'Annuleren') : null

@@ -313,3 +313,7 @@ button { font: inherit; color: inherit; }
 .account-tile .sub { font-size: 12px; color: var(--text-2); max-width: 100%; }
 .account-tile.add { background: transparent; border: 1px solid var(--surface-high); }
 .account-tile.add .avatar { --c: #93A0B0; background: var(--surface); border-color: transparent; font-weight: 400; }
+
+/* Login: Xtream / M3U fields, laid out like the rest of the card */
+.login-fields { display: flex; flex-direction: column; gap: 8px; }
+.login-fields.hidden { display: none; }

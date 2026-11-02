@@ -1,6 +1,11 @@
 # Parabol voor macOS en Windows (desktop)
 
-De desktopversie van Parabol, gebouwd met Electron. Parabol bevat geen content: je speelt af van je eigen aanbieder (Xtream Codes API). Vanaf **v2.2.0** heeft hij dezelfde opzet en functies als de Android-app v2.2.0.
+De desktopversie van Parabol, gebouwd met Electron. Parabol bevat geen content: je speelt af van je eigen aanbieder (Xtream Codes API of een M3U-afspeellijst). Vanaf **v2.2.0** heeft hij dezelfde opzet en functies als de Android-app v2.2.0.
+
+## Nieuw in v2.7.0
+
+- **M3U-afspeellijsten**: naast Xtream kun je bij een account nu ook de link van een M3U-afspeellijst plakken. Zenders, films en series uit de lijst komen in dezelfde schermen, met groepen zoals in de lijst. Staat er een tv-gids (XMLTV, ook .gz) in de lijst, of vul je die link zelf in, dan zie je ook de tv-gids.
+- Groepen worden alleen nog als land gebundeld bij een echte landcode of taalcode (NL, UK, EN …).
 
 ## Nieuw in v2.6.3
 

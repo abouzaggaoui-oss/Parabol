@@ -27,7 +27,7 @@ object PlayerFactory {
         // DefaultDataSource keeps content:// and file:// working (recordings).
         val dataSourceFactory = DefaultDataSource.Factory(context, httpFactory)
 
-        // Movies from IPTV providers often have AC3 / E-AC3 / DTS / TrueHD audio, which many
+        // Movies often have AC3 / E-AC3 / DTS / TrueHD audio, which many
         // phones and TV boxes can't decode. The FFmpeg extension decodes those in software when
         // the device can't. Decoder fallback tries another (e.g. software) video decoder when the
         // first one fails to start.

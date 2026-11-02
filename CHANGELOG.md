@@ -1,5 +1,11 @@
 # Wijzigingen (Android)
 
+## Nieuw in v2.7.0
+
+- **M3U-afspeellijsten**: naast Xtream kun je bij een account nu ook de link van een M3U-afspeellijst plakken. Zenders, films en series uit de lijst komen in dezelfde schermen, met groepen zoals in de lijst. Staat er een tv-gids (XMLTV, ook .gz) in de lijst, of vul je die link zelf in, dan zie je ook de tv-gids.
+- Groepen worden alleen nog als land gebundeld bij een echte landcode of taalcode (NL, UK, EN …).
+- Opnemen werkt bij M3U-zenders met een gewone streamlink (.ts); zenders die als .m3u8 in de lijst staan, kunnen niet worden opgenomen.
+
 ## Nieuw in v2.6.4
 
 - **Filmposters betrouwbaarder**: posters komen vaak van verschillende servers; sommige weigerden het verzoek of gaven bij veel tegelijk een foutmelding, waardoor een poster leeg bleef. Parabol stuurt nu een gewone browser-identificatie mee, probeert een mislukte poster tot drie keer, en bewaart posters op het toestel.
